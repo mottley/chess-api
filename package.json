@@ -9,11 +9,12 @@
   "scripts": {
     "start": "nodemon app.ts",
     "build": "tsc --project ./",
-    "test": "ts-node src/service/game.service.ts"
+    "test": "ts-node src/dao/player.dao.ts"
   },
   "dependencies": {
     "chess.js": "^0.11.0",
     "express": "^4.17.1",
+    "mysql2": "^2.2.5",
     "sequelize": "^6.3.5",
     "uuid": "^8.3.1"
   },
