@@ -1,8 +1,8 @@
 import { PlayerDao } from '../dao/player.dao';
 import bcrypt from 'bcrypt';
-import { SignUpRequest } from './request/sign-up.request';
 import { Player } from '../model/player';
-import { InvalidUsernameError } from '../error';
+import { InvalidUsernameError, InsecurePasswordError } from '../error';
+import zxcvbn from 'zxcvbn';
 
 const SALT_ROUNDS = 10;
 
@@ -17,14 +17,17 @@ export class PlayerService {
       throw new InvalidUsernameError('Username already taken!')
     }
 
-    // TODO - verify password strength
+    if (!this.isPasswordStrong(plaintextPassword, username)) {
+      throw new InsecurePasswordError('Password is too weak!')
+    }
 
     const hashedPassword: string = await bcrypt.hash(plaintextPassword, SALT_ROUNDS)
 
     return this.dao.createPlayer(username, hashedPassword)
   }
 
-  private validatePasswordStrength(plaintextPassword: string) {
-
+  private isPasswordStrong(plaintextPassword: string, username: string): boolean {
+    // Add in username in password to ensure username is not used as password
+    return zxcvbn(plaintextPassword, [username]).score >= 3
   }
 }

@@ -36,3 +36,5 @@ export class InvalidMoveError extends HttpBadRequestError { }
 export class UnauthorizedMoveError extends UnauthorizedError { }
 
 export class InvalidUsernameError extends HttpBadRequestError { }
+
+export class InsecurePasswordError extends HttpBadRequestError { }
