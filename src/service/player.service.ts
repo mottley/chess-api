@@ -1,7 +1,7 @@
 import { PlayerDao } from '../dao/player.dao';
 import bcrypt from 'bcrypt';
 import { Player } from '../model/player';
-import { InvalidUsernameError, InsecurePasswordError } from '../error';
+import { InvalidUsernameError, InsecurePasswordError, InvalidCredentialsError } from '../error';
 import zxcvbn from 'zxcvbn';
 
 const SALT_ROUNDS = 10;
@@ -10,10 +10,11 @@ export class PlayerService {
 
   constructor(private dao: PlayerDao) { }
 
+  // TODO - implement JSON schema input validation
   async signUp(username: string, plaintextPassword: string) {
-    const existingPlayer: Player | undefined = await this.dao.getPlayerByUsername(username)
+    const player: Player | undefined = await this.dao.getPlayerByUsername(username)
 
-    if (existingPlayer !== undefined) {
+    if (player !== undefined) {
       throw new InvalidUsernameError('Username already taken!')
     }
 
@@ -24,6 +25,23 @@ export class PlayerService {
     const hashedPassword: string = await bcrypt.hash(plaintextPassword, SALT_ROUNDS)
 
     return this.dao.createPlayer(username, hashedPassword)
+  }
+
+  // TODO - rename/move to authentication service?
+  async login(username: string, plaintextPassword: string): Promise<string> {
+    const player: Player | undefined = await this.dao.getPlayerByUsername(username)
+
+    if (player === undefined) {
+      throw new InvalidCredentialsError()
+    }
+
+    const passwordsMatch: boolean = await bcrypt.compare(plaintextPassword, player.password)
+    if (!passwordsMatch) {
+      throw new InvalidCredentialsError()
+    }
+
+    // TODO - send jwt or session token?
+    return 'login successful'
   }
 
   private isPasswordStrong(plaintextPassword: string, username: string): boolean {

@@ -7,8 +7,9 @@ export interface ErrorData {
 
 export enum HttpResponseCode {
   BadRequest = 400,
+  Unauthorized = 401,
+  Forbidden = 403,
   NotFound = 404,
-  Unauthorized = 403,
   InternalServerError = 500
 }
 
@@ -27,14 +28,22 @@ export class HttpBadRequestError extends HttpError {
 
 export class UnauthorizedError extends HttpError {
   constructor(message = 'Unauthorized') {
-    super(message, HttpResponseCode.BadRequest);
+    super(message, HttpResponseCode.Unauthorized);
+  }
+}
+
+export class ForbiddenError extends HttpError {
+  constructor(message = 'Forbidden') {
+    super(message, HttpResponseCode.Forbidden);
   }
 }
 
 export class InvalidMoveError extends HttpBadRequestError { }
 
-export class UnauthorizedMoveError extends UnauthorizedError { }
+export class UnauthorizedMoveError extends ForbiddenError { }
 
 export class InvalidUsernameError extends HttpBadRequestError { }
 
 export class InsecurePasswordError extends HttpBadRequestError { }
+
+export class InvalidCredentialsError extends UnauthorizedError { }

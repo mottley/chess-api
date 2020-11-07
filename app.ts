@@ -20,6 +20,13 @@ app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response) => {
   })
 })
 
+app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response) => {
+  console.log('Request body: ', req.body)
+  playerService.login(req.body.username, req.body.password).then(r => {
+    res.status(200).send(r)
+  })
+})
+
 app.listen(8000, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:8000`);
 });

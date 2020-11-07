@@ -7,7 +7,7 @@ export class PlayerDao {
     PlayerDbo.sync()
   }
 
-  createPlayer(username: string, hashedPassword: string): Promise<void> {
+  async createPlayer(username: string, hashedPassword: string): Promise<void> {
     return PlayerDbo.create({
       username,
       password: hashedPassword
@@ -17,7 +17,7 @@ export class PlayerDao {
       })
   }
 
-  getPlayerByUsername(username: string): Promise<Player | undefined> {
+  async getPlayerByUsername(username: string): Promise<Player | undefined> {
     return PlayerDbo.findOne({ where: { username } })
       .then(p => {
         if (p === null) {
