@@ -10,6 +10,7 @@ export class MoveDbo extends Model { }
 MoveDbo.init({
   id: {
     type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true
   },
   move: {

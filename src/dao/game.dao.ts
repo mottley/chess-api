@@ -5,6 +5,10 @@ import { Player } from '../model/player';
 
 export class GameDao {
 
+  constructor() {
+    GameDbo.sync()
+  }
+
   getGame(id: string): Promise<Game | undefined> {
     return GameDbo.findByPk(id)
       .then(g => {

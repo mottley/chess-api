@@ -1,9 +1,8 @@
 import { Sequelize, InitOptions } from 'sequelize';
 
-const username = process.env.DB_USERNAME
-const password = process.env.DB_PASSWORD
-
-const host = process.env.DB_HOST
+const username: string = process.env.DB_USERNAME || ''
+const password: string = process.env.DB_PASSWORD || ''
+const host: string = process.env.DB_HOST || ''
 
 const sequelizeConnection = new Sequelize('chess', username, password, {
   host,

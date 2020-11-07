@@ -1,8 +1,21 @@
 import { Player } from '../model/player';
 import { PlayerDbo } from './dbo/player.dbo';
 
-
 export class PlayerDao {
+
+  constructor() {
+    PlayerDbo.sync()
+  }
+
+  createPlayer(username: string, hashedPassword: string): Promise<void> {
+    return PlayerDbo.create({
+      username,
+      password: hashedPassword
+    })
+      .then(p => {
+        return
+      })
+  }
 
   getPlayerByUsername(username: string): Promise<Player | undefined> {
     return PlayerDbo.findOne({ where: { username } })
@@ -16,13 +29,6 @@ export class PlayerDao {
   }
 
   static convert(dbo: PlayerDbo): Player {
-    const player = new Player()
-    player.id = dbo.id
-    player.username = dbo.username
-    player.password = dbo.password
-
-    return player
+    return new Player(dbo.id, dbo.username, dbo.password)
   }
 }
-
-new PlayerDao().getPlayerByUsername('test').then(p => console.log(p.username))

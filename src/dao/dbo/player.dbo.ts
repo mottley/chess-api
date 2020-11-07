@@ -1,4 +1,4 @@
-import { Model, DataTypes, Sequelize, InitOptions } from 'sequelize';
+import { Model, DataTypes, Sequelize, InitOptions, Optional } from 'sequelize';
 import { getOptions } from '../connection';
 
 interface PlayerAttributes {
@@ -7,9 +7,11 @@ interface PlayerAttributes {
   password: string
 }
 
+interface PlayerCreationAttributes extends Optional<PlayerAttributes, 'id'> { }
+
 const options: InitOptions = getOptions('Player');
 
-export class PlayerDbo extends Model<PlayerAttributes> implements PlayerAttributes {
+export class PlayerDbo extends Model<PlayerAttributes, PlayerCreationAttributes> implements PlayerAttributes {
   public id!: string;
   public username!: string;
   public password!: string;
@@ -18,6 +20,7 @@ export class PlayerDbo extends Model<PlayerAttributes> implements PlayerAttribut
 PlayerDbo.init({
   id: {
     type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true
   },
   username: {

@@ -27,6 +27,7 @@ export class GameDbo extends Model<GameAttributes> implements GameAttributes {
 GameDbo.init({
   id: {
     type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true
   },
   status: {
@@ -38,7 +39,7 @@ GameDbo.init({
     type: DataTypes.STRING,
     allowNull: false
   },
-  lastUpdate: {
+  lastUpdate: { // TODO - see if needed, sequelize already includes updatedAt
     type: DataTypes.DATE,
     allowNull: false
   },
