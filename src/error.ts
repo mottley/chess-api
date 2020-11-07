@@ -31,8 +31,8 @@ export class UnauthorizedError extends HttpError {
   }
 }
 
-export class InvalidMoveError extends HttpBadRequestError {
-}
+export class InvalidMoveError extends HttpBadRequestError { }
 
-export class UnauthorizedMoveError extends UnauthorizedError {
-}
+export class UnauthorizedMoveError extends UnauthorizedError { }
+
+export class InvalidUsernameError extends HttpBadRequestError { }

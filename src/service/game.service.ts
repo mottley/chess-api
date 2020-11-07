@@ -5,8 +5,7 @@ import { Game } from '../model/game';
 
 export class GameService {
 
-  constructor(private dao: GameDao) {
-  }
+  constructor(private dao: GameDao) { }
 
   // TODO - pass in players
   startGame() {
