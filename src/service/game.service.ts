@@ -18,9 +18,9 @@ export class GameService {
   }
 
   // TODO - pass in player
-  makeMove(gameId: string, move: string) {
+  async makeMove(gameId: string, move: string) {
     // Pull and initialize current game state
-    const game: Game = this.dao.getGame(gameId);
+    const game: Game = await this.dao.getGame(gameId);
 
     if (game === undefined) {
       // throw new InvalidGameError(`Game id: ${gameId} is not found!`)
@@ -42,3 +42,5 @@ export class GameService {
     return
   }
 }
+
+new GameService(new GameDao()).makeMove('', '')

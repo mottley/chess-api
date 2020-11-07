@@ -1,9 +1,19 @@
 import { Model, DataTypes, Sequelize, InitOptions } from 'sequelize';
 import { getOptions } from '../connection';
 
+interface PlayerAttributes {
+  id: string,
+  username: string,
+  password: string
+}
+
 const options: InitOptions = getOptions('Player');
 
-export class PlayerDbo extends Model { }
+export class PlayerDbo extends Model<PlayerAttributes> implements PlayerAttributes {
+  public id!: string;
+  public username!: string;
+  public password!: string;
+}
 
 PlayerDbo.init({
   id: {

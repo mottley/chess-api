@@ -1,10 +1,28 @@
 import { Model, DataTypes, Sequelize, InitOptions } from 'sequelize';
 import { GameStatus } from '../../model/enum';
 import { getOptions } from '../connection';
+import { Game } from '../../model/game';
+import { PlayerDbo } from './player.dbo';
+
+interface GameAttributes {
+  id: string,
+  status: GameStatus,
+  board: string,
+  lastUpdate: Date,
+  winner: PlayerDbo,
+  players: PlayerDbo[]
+}
 
 const options: InitOptions = getOptions('Game');
 
-export class GameDbo extends Model { }
+export class GameDbo extends Model<GameAttributes> implements GameAttributes {
+  public id!: string
+  public status!: GameStatus
+  public board!: string
+  public lastUpdate!: Date
+  public winner!: PlayerDbo
+  public players!: PlayerDbo[]
+}
 
 GameDbo.init({
   id: {
@@ -16,16 +34,13 @@ GameDbo.init({
     values: Object.values(GameStatus),
     allowNull: false,
   },
-  state: {
+  board: {
     type: DataTypes.STRING,
     allowNull: false
   },
   lastUpdate: {
-    type: DataTypes.TIME,
+    type: DataTypes.DATE,
     allowNull: false
-  },
-  winner: {
-    type: DataTypes.STRING,
   },
   endReason: {
     type: DataTypes.STRING
@@ -33,3 +48,6 @@ GameDbo.init({
 },
   options
 );
+
+GameDbo.belongsTo(PlayerDbo, { foreignKey: 'winner' }) // TODO - mark `allowNull: true`
+GameDbo.belongsToMany(PlayerDbo, { through: 'PlayerGames' })
