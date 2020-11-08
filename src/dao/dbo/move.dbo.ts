@@ -27,3 +27,5 @@ MoveDbo.init({
 
 MoveDbo.belongsTo(GameDbo);
 MoveDbo.belongsTo(PlayerDbo);
+
+options.sequelize.sync()

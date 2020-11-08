@@ -1,6 +1,9 @@
 import { Game } from '../model/game';
 import { GameDbo } from './dbo/game.dbo';
 import { Player } from '../model/player';
+import { GameStatus } from '../model/enum';
+import { PlayerDbo } from './dbo/player.dbo';
+import { PlayerDao } from './player.dao';
 
 
 export class GameDao {
@@ -9,15 +12,25 @@ export class GameDao {
     GameDbo.sync()
   }
 
-  getGame(id: string): Promise<Game | undefined> {
-    return GameDbo.findByPk(id)
-      .then(g => {
-        if (g === null) {
-          return undefined
-        }
+  async createGame(board: string, players: PlayerDbo[]): Promise<void> {
+    const game: GameDbo = await GameDbo.create({
+      status: GameStatus.InProgress,
+      board: board,
+    })
 
-        return GameDao.convert(g)
-      })
+    players.forEach(p => game.addPlayer(p))
+  }
+
+  async getGame(id: string): Promise<Game | undefined> {
+    const game: GameDbo | null = await GameDbo.findByPk(id)
+
+    if (game === null) {
+      return undefined
+    }
+
+    const players: PlayerDbo[] | null = await game.getPlayers()
+
+    return GameDao.convert(game, players)
   }
 
   storeGame(game: Game) {
@@ -25,12 +38,16 @@ export class GameDao {
     // Current game state (Pending, In Progress, Completed)
     // End reason - draw, checkmate, etc.
     // Winner?
+
+    GameDbo.update({
+      board: game.rep()
+    },
+      { where: { id: game.id } }
+    )
   }
 
-  static convert(dbo: GameDbo): Game {
-    const players: Player[] = dbo.players.map(p => p)
-
-    const game: Game = new Game(players, dbo.id, dbo.board)
-    return game
+  static convert(dbo: GameDbo, pdbos: PlayerDbo[]): Game {
+    const players: Player[] = pdbos.map(p => PlayerDao.convert(p))
+    return new Game(players, dbo.id, dbo.board)
   }
 }

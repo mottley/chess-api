@@ -1,5 +1,4 @@
 import { Chess, ChessInstance } from "chess.js";
-import { v4 as uuidv4 } from 'uuid';
 import { Player } from "./player";
 
 export class Game {
@@ -9,8 +8,13 @@ export class Game {
 
   constructor(players: Player[], id?: string, rep?: string) {
     this.players = players
-    this.id = id || uuidv4()
+    this.id = id || ''
     this.chess = rep ? new Chess() : new Chess(rep)
+  }
+
+  makeMove(move: string) {
+    this.chess.move(move)
+    // this.chess.game_over()
   }
 
   isMoveLegal(move: string): boolean {

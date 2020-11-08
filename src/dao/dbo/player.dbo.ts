@@ -1,4 +1,4 @@
-import { Model, DataTypes, Sequelize, InitOptions, Optional } from 'sequelize';
+import { Model, DataTypes, InitOptions, Optional } from 'sequelize';
 import { getOptions } from '../connection';
 
 interface PlayerAttributes {

@@ -1,14 +1,15 @@
 import { Chess, ChessInstance } from 'chess.js';
-import { InvalidMoveError } from '../error';
+import { InvalidMoveError, UnauthorizedMoveError } from '../error';
 import { GameDao } from '../dao/game.dao';
 import { Game } from '../model/game';
+import { Player } from '../model/player';
 
 export class GameService {
 
   constructor(private dao: GameDao) { }
 
-  // TODO - pass in players
-  startGame() {
+  // TODO - do we need to distinguish who is white vs. black?
+  startGame(players: Player[]) {
     // Initialize new game
     const game: Game = new Game([]);
 
@@ -17,22 +18,29 @@ export class GameService {
   }
 
   // TODO - pass in player
-  async makeMove(gameId: string, move: string) {
+  async makeMove(username: string, gameId: string, move: string) {
     // Pull and initialize current game state
-    const game: Game = await this.dao.getGame(gameId);
+    const game: Game | undefined = await this.dao.getGame(gameId);
+    const player: Player | undefined = game !== undefined ?
+      game.players.find(p => p.username === username) : undefined
 
-    if (game === undefined) {
-      // throw new InvalidGameError(`Game id: ${gameId} is not found!`)
-      return
+    if (game === undefined || player === undefined) {
+      throw new UnauthorizedMoveError(`Player not allowed to act on game: ${gameId}!`)
     }
+
+    // TODO - Check if player is allowed to make move/is their turn
 
     // Check if move is legal first
     if (!game.isMoveLegal(move)) {
-      throw new InvalidMoveError(`${move} is not legal!`)
+      throw new InvalidMoveError(`Move: ${move} is not legal!`)
     }
 
     // Make move
+    game.makeMove(move)
+
     // Record game state
+    this.dao.storeGame(game)
+
     // Record move history
   }
 
@@ -42,4 +50,4 @@ export class GameService {
   }
 }
 
-new GameService(new GameDao()).makeMove('', '')
+// new GameService(new GameDao()).makeMove('', '')
