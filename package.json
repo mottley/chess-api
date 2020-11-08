@@ -12,6 +12,8 @@
     "test": "ts-node src/dao/player.dao.ts"
   },
   "dependencies": {
+    "ajv": "^7.0.0-beta.3",
+    "ajv-formats": "^0.4.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "chess.js": "^0.11.0",

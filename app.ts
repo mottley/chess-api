@@ -9,6 +9,7 @@ import { PlayerDbo } from './src/dao/dbo/player.dbo';
 import { Game } from './src/model/game';
 import { GameDbo } from './src/dao/dbo/game.dbo';
 import { MoveRequest, MoveParams } from './src/service/request/move.request';
+import { validateMove } from './src/validator';
 
 const playerDao = new PlayerDao();
 const playerService = new PlayerService(playerDao);
@@ -46,7 +47,7 @@ app.post('/game', async (req, res) => {
   })
 })
 
-app.post('/game/:gameId/move', (req: Request<MoveParams, {}, MoveRequest>, res: Response) => {
+app.post('/game/:gameId/move', validateMove, (req: Request<MoveParams, {}, MoveRequest>, res: Response) => {
   gameService.makeMove(req.body.username, req.params.gameId, req.body.move).then(() => {
     res.status(200).end()
   })
