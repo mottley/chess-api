@@ -28,7 +28,7 @@ export class PlayerService {
   }
 
   // TODO - rename/move to authentication service?
-  async login(username: string, plaintextPassword: string): Promise<string> {
+  async login(username: string, plaintextPassword: string): Promise<Player> {
     const player: Player | undefined = await this.dao.getPlayerByUsername(username)
 
     if (player === undefined) {
@@ -40,8 +40,7 @@ export class PlayerService {
       throw new InvalidCredentialsError()
     }
 
-    // TODO - send jwt or session token?
-    return 'login successful'
+    return player
   }
 
   private isPasswordStrong(plaintextPassword: string, username: string): boolean {

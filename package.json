@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "nodemon app.ts",
+    "start": "nodemon --exec ts-node -T app.ts",
     "build": "tsc --project ./",
     "test": "ts-node src/dao/player.dao.ts"
   },
@@ -17,8 +17,9 @@
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "chess.js": "^0.11.0",
+    "connect-session-sequelize": "^7.0.4",
     "express": "^4.17.1",
-    "express-mysql-session": "^2.1.4",
+    "express-session": "^1.17.1",
     "mysql2": "^2.2.5",
     "sequelize": "^6.3.5",
     "zxcvbn": "^4.4.2"
@@ -29,6 +30,7 @@
     "@types/body-parser": "^1.19.0",
     "@types/chess.js": "^0.10.1",
     "@types/express": "^4.17.8",
+    "@types/express-session": "^1.17.2",
     "@types/node": "^14.14.6",
     "@types/zxcvbn": "^4.4.0",
     "nodemon": "^2.0.6",

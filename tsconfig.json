@@ -1,14 +1,26 @@
 {
   "extends": "@tsconfig/node12/tsconfig.json",
   "compilerOptions": {
-    "preserveConstEnums": true
+    // "esModuleInterop": true,
+    // "module": "commonjs",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "preserveConstEnums": true,
+    "declaration": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
   "include": [
-    // "src/**/*"
-    "app.ts"
+    "src/**/*",
+    "app.ts",
+    "types/**/*"
   ],
   "exclude": [
     "node_modules",
     "**/*.spec.ts"
-  ]
+  ],
 }

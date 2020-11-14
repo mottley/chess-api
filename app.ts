@@ -10,6 +10,8 @@ import { Game } from './src/model/game';
 import { GameDbo } from './src/dao/dbo/game.dbo';
 import { MoveRequest, MoveParams } from './src/service/request/move.request';
 import { validateMove } from './src/validator';
+import session from 'express-session';
+import { getSequelizeStore } from './src/session.store';
 
 const playerDao = new PlayerDao();
 const playerService = new PlayerService(playerDao);
@@ -17,8 +19,19 @@ const playerService = new PlayerService(playerDao);
 const gameDao = new GameDao();
 const gameService = new GameService(gameDao);
 
+
+const sessionStore = getSequelizeStore();
+
 const app = express();
 app.use(bodyParser.json())
+app.use(session({
+  secret: 'test-secret',
+  store: sessionStore,
+  resave: false,
+  // cookie: { secure: true }
+}))
+
+sessionStore.sync()
 
 app.get('/', (req, res) => res.send('Express + TypeScript Server'));
 
@@ -32,6 +45,7 @@ app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response) => {
 app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response) => {
   console.log('Request body: ', req.body)
   playerService.login(req.body.username, req.body.password).then(r => {
+    req.session.playerId = r.id
     res.status(200).send(r)
   })
 })
@@ -51,6 +65,10 @@ app.post('/game/:gameId/move', validateMove, (req: Request<MoveParams, {}, MoveR
   gameService.makeMove(req.body.username, req.params.gameId, req.body.move).then(() => {
     res.status(200).end()
   })
+})
+
+app.get('/session', (req, res) => {
+  res.send(req.session.playerId)
 })
 
 app.listen(8000, () => {
