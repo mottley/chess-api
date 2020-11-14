@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { SignUpRequest } from './src/service/request/sign-up.request';
 import { AuthenticationService } from './src/service/auth.service';
 import { PlayerDao } from './src/dao/player.dao';
@@ -13,6 +13,7 @@ import { validateMove } from './src/validator';
 import session from 'express-session';
 import { getSequelizeStore } from './src/session.store';
 import { authenticated } from './src/authenticator';
+import { handleErrors } from './src/error';
 
 const playerDao = new PlayerDao();
 const authService = new AuthenticationService(playerDao);
@@ -37,19 +38,19 @@ sessionStore.sync()
 
 app.get('/', (req, res) => res.send('Express + TypeScript Server'));
 
-app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response) => {
-  console.log('Request body: ', req.body)
+app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
+  // console.log('Request body: ', req.body)
   authService.signUp(req.body.username, req.body.password).then(() => {
     res.status(204).end()
-  })
+  }).catch(next)
 })
 
-app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response) => {
-  console.log('Request body: ', req.body)
+app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
+  // console.log('Request body: ', req.body)
   authService.login(req.body.username, req.body.password).then(r => {
     req.session.playerId = r.id
     res.status(200).send(r)
-  })
+  }).catch(next)
 })
 
 app.post('/game', async (req, res) => {
@@ -63,16 +64,18 @@ app.post('/game', async (req, res) => {
   })
 })
 
-app.post('/game/:gameId/move', authenticated, validateMove, (req: Request<MoveParams, {}, MoveRequest>, res: Response) => {
+app.post('/game/:gameId/move', authenticated, validateMove, (req: Request<MoveParams, {}, MoveRequest>, res: Response, next: NextFunction) => {
   gameService.makeMove(res.locals.player, req.params.gameId, req.body.move).then(() => {
     res.status(200).end()
-  })
+  }).catch(next)
 })
 
 app.get('/session', authenticated, (req, res) => {
   console.log(res.locals.player)
   res.send(req.session.playerId)
 })
+
+app.use(handleErrors)
 
 app.listen(8000, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:8000`);

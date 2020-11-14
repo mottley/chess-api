@@ -1,3 +1,4 @@
+import { Request, Response, NextFunction } from 'express';
 
 export interface ErrorData {
   message: string,
@@ -47,3 +48,7 @@ export class InvalidUsernameError extends HttpBadRequestError { }
 export class InsecurePasswordError extends HttpBadRequestError { }
 
 export class InvalidCredentialsError extends UnauthorizedError { }
+
+export const handleErrors = (err: HttpError, req: Request, res: Response, next: NextFunction) => {
+  next(err)
+}
