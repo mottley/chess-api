@@ -1,16 +1,16 @@
 import { PlayerDao } from '../dao/player.dao';
 import bcrypt from 'bcrypt';
 import { Player } from '../model/player';
-import { InvalidUsernameError, InsecurePasswordError, InvalidCredentialsError } from '../error';
+import { InvalidUsernameError, InsecurePasswordError, InvalidCredentialsError, UnauthorizedError } from '../error';
 import zxcvbn from 'zxcvbn';
+import { Request } from 'express';
 
 const SALT_ROUNDS = 10;
 
-export class PlayerService {
+export class AuthenticationService {
 
   constructor(private dao: PlayerDao) { }
 
-  // TODO - implement JSON schema input validation
   async signUp(username: string, plaintextPassword: string) {
     const player: Player | undefined = await this.dao.getPlayerByUsername(username)
 
@@ -27,7 +27,6 @@ export class PlayerService {
     return this.dao.createPlayer(username, hashedPassword)
   }
 
-  // TODO - rename/move to authentication service?
   async login(username: string, plaintextPassword: string): Promise<Player> {
     const player: Player | undefined = await this.dao.getPlayerByUsername(username)
 
@@ -38,6 +37,22 @@ export class PlayerService {
     const passwordsMatch: boolean = await bcrypt.compare(plaintextPassword, player.password)
     if (!passwordsMatch) {
       throw new InvalidCredentialsError()
+    }
+
+    return player
+  }
+
+  async authenticate(req: Request): Promise<Player> {
+    const playerId: string | undefined = req.session.playerId
+
+    if (playerId === undefined) {
+      throw new UnauthorizedError('Not authenticated!')
+    }
+
+    const player: Player | undefined = await this.dao.getPlayerById(playerId)
+
+    if (player === undefined) {
+      throw new InvalidUsernameError() // TODO - change to invalid player
     }
 
     return player

@@ -5,7 +5,6 @@ export interface MoveParams {
 }
 
 export interface MoveRequest {
-  username: string, // TODO - temporary
   move: string,
 }
 
@@ -28,9 +27,6 @@ export const moveRequestSchema: JSONSchemaType<MoveRequest> = {
       type: 'string',
       pattern: '^[A-Za-z]{1,3}[0-9]$'
     },
-    username: {
-      type: 'string'
-    }
   },
   required: ['move'],
   additionalProperties: false

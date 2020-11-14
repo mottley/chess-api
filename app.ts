@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { SignUpRequest } from './src/service/request/sign-up.request';
-import { PlayerService } from './src/service/player.service';
+import { AuthenticationService } from './src/service/auth.service';
 import { PlayerDao } from './src/dao/player.dao';
 import { GameService } from './src/service/game.service';
 import { GameDao } from './src/dao/game.dao';
@@ -12,9 +12,10 @@ import { MoveRequest, MoveParams } from './src/service/request/move.request';
 import { validateMove } from './src/validator';
 import session from 'express-session';
 import { getSequelizeStore } from './src/session.store';
+import { authenticated } from './src/authenticator';
 
 const playerDao = new PlayerDao();
-const playerService = new PlayerService(playerDao);
+const authService = new AuthenticationService(playerDao);
 
 const gameDao = new GameDao();
 const gameService = new GameService(gameDao);
@@ -28,7 +29,8 @@ app.use(session({
   secret: 'test-secret',
   store: sessionStore,
   resave: false,
-  // cookie: { secure: true }
+  // cookie: { secure: true } TODO - for prod
+  saveUninitialized: false
 }))
 
 sessionStore.sync()
@@ -37,14 +39,14 @@ app.get('/', (req, res) => res.send('Express + TypeScript Server'));
 
 app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response) => {
   console.log('Request body: ', req.body)
-  playerService.signUp(req.body.username, req.body.password).then(() => {
+  authService.signUp(req.body.username, req.body.password).then(() => {
     res.status(204).end()
   })
 })
 
 app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response) => {
   console.log('Request body: ', req.body)
-  playerService.login(req.body.username, req.body.password).then(r => {
+  authService.login(req.body.username, req.body.password).then(r => {
     req.session.playerId = r.id
     res.status(200).send(r)
   })
@@ -61,13 +63,14 @@ app.post('/game', async (req, res) => {
   })
 })
 
-app.post('/game/:gameId/move', validateMove, (req: Request<MoveParams, {}, MoveRequest>, res: Response) => {
-  gameService.makeMove(req.body.username, req.params.gameId, req.body.move).then(() => {
+app.post('/game/:gameId/move', authenticated, validateMove, (req: Request<MoveParams, {}, MoveRequest>, res: Response) => {
+  gameService.makeMove(res.locals.player, req.params.gameId, req.body.move).then(() => {
     res.status(200).end()
   })
 })
 
-app.get('/session', (req, res) => {
+app.get('/session', authenticated, (req, res) => {
+  console.log(res.locals.player)
   res.send(req.session.playerId)
 })
 

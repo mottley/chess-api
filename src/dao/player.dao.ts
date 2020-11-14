@@ -17,6 +17,16 @@ export class PlayerDao {
       })
   }
 
+  async getPlayerById(id: string): Promise<Player | undefined> {
+    return PlayerDbo.findByPk(id).then(p => {
+      if (p === null) {
+        return undefined
+      }
+
+      return PlayerDao.convert(p)
+    })
+  }
+
   async getPlayerByUsername(username: string): Promise<Player | undefined> {
     return PlayerDbo.findOne({ where: { username } })
       .then(p => {

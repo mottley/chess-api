@@ -17,12 +17,11 @@ export class GameService {
     this.dao.storeGame(game);
   }
 
-  // TODO - pass in player
-  async makeMove(username: string, gameId: string, move: string) {
+  async makeMove(authenticatedPlayer: Player, gameId: string, move: string) {
     // Pull and initialize current game state
     const game: Game | undefined = await this.dao.getGame(gameId);
     const player: Player | undefined = game !== undefined ?
-      game.players.find(p => p.username === username) : undefined
+      game.players.find(p => p.id === authenticatedPlayer.id) : undefined
 
     if (game === undefined || player === undefined) {
       throw new UnauthorizedMoveError(`Player not allowed to act on game: ${gameId}!`)
