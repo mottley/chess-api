@@ -8,22 +8,35 @@ export class GameService {
 
   constructor(private dao: GameDao) { }
 
-  // TODO - do we need to distinguish who is white vs. black?
-  startGame(players: Player[]) {
-    // Initialize new game
-    const game: Game = new Game([]);
+  async startGame(players: Player[]): Promise<string> {
 
-    // Generate string representation and store in database
-    this.dao.storeGame(game);
+    // TODO - cleanup maybe
+    let whitePlayer: Player;
+    let blackPlayer: Player;
+
+    const firstChance = Math.random() * 100;
+    const secondChance = Math.random() * 100;
+
+    if (firstChance > secondChance) {
+      whitePlayer = players[0]
+      blackPlayer = players[1]
+    }
+    else {
+      whitePlayer = players[1]
+      blackPlayer = players[0]
+    }
+
+    return this.dao.createGame(Game.emptyBoard(), whitePlayer, blackPlayer)
   }
 
   async makeMove(authenticatedPlayer: Player, gameId: string, move: string) {
     // Pull and initialize current game state
     const game: Game | undefined = await this.dao.getGame(gameId);
-    const player: Player | undefined = game !== undefined ?
-      game.players.find(p => p.id === authenticatedPlayer.id) : undefined
 
-    if (game === undefined || player === undefined) {
+    const playerInGame: boolean = game !== undefined &&
+      (game.white.id === authenticatedPlayer.id || game.black.id === authenticatedPlayer.id)
+
+    if (game === undefined || !playerInGame) {
       throw new UnauthorizedMoveError(`Player not allowed to act on game: ${gameId}!`)
     }
 
@@ -38,7 +51,7 @@ export class GameService {
     game.makeMove(move)
 
     // Record game state
-    this.dao.storeGame(game)
+    await this.dao.storeGame(game)
 
     // Record move history
   }

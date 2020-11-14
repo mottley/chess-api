@@ -48,21 +48,25 @@ app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response, next:
 app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
   // console.log('Request body: ', req.body)
   authService.login(req).then(r => {
-    console.log(req.session)
     req.session.playerId = r.id
     res.status(200).send(r)
   }).catch(next)
 })
 
-app.post('/game', async (req, res) => {
-  const player1 = await PlayerDbo.findOne({ where: { username: 'clayton' } })
-  const player2 = await PlayerDbo.findOne({ where: { username: 'clayton2' } })
+app.post('/game', async (req, res, next) => {
+  const player1 = await playerDao.getPlayerByUsername('clayton')
+  const player2 = await playerDao.getPlayerByUsername('clayton5')
 
-  const game = new Game([])
 
-  gameDao.createGame(game.rep(), [player1!, player2!]).then(() => {
-    res.send('game created')
-  })
+  // const game = new Game([])
+
+  // gameDao.createGame(game.rep(), [player1!, player2!]).then(() => {
+  //   res.send('game created')
+  // })
+
+  gameService.startGame([player1!, player2!]).then(id => {
+    res.status(200).send(id)
+  }).catch(next)
 })
 
 app.post('/game/:gameId/move', authenticated, validateMove, (req: Request<MoveParams, {}, MoveRequest>, res: Response, next: NextFunction) => {

@@ -7,15 +7,6 @@ import { Request } from 'express';
 import { SessionDbo } from '../dao/dbo/session.dbo';
 import { SignUpRequest } from './request/sign-up.request';
 
-type Callback<A> = (args: A) => void;
-
-const promisify = <T, A>(fn: (args: T, cb: Callback<A>) => void): ((args: T) => Promise<A>) =>
-  (args: T) => new Promise((resolve) => {
-    fn(args, (callbackArgs) => {
-      resolve(callbackArgs);
-    });
-  });
-
 const SALT_ROUNDS = 10;
 
 export class AuthenticationService {
@@ -62,6 +53,18 @@ export class AuthenticationService {
     }
 
     return player
+  }
+
+  async logout(req: Request): Promise<void> {
+    const playerId: string | undefined = req.session.playerId
+    if (req.session.playerId === undefined) {
+      return
+    }
+
+    // req.session.destroy()
+
+    // Clear all active sessions for player
+    await SessionDbo.destroy({ where: { playerId: playerId } })
   }
 
   async authenticate(req: Request): Promise<Player> {

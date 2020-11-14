@@ -1,53 +1,53 @@
 import { Game } from '../model/game';
 import { GameDbo } from './dbo/game.dbo';
 import { Player } from '../model/player';
-import { GameStatus } from '../model/enum';
-import { PlayerDbo } from './dbo/player.dbo';
+import { GameStatus, Color } from '../model/enum';
 import { PlayerDao } from './player.dao';
+
 
 
 export class GameDao {
 
   constructor() {
-    GameDbo.sync()
+    GameDbo.sync({ force: false })
   }
 
-  async createGame(board: string, players: PlayerDbo[]): Promise<void> {
+  async createGame(board: string, white: Player, black: Player): Promise<string> {
+
     const game: GameDbo = await GameDbo.create({
       status: GameStatus.InProgress,
       board: board,
+      whitePlayerId: white.id,
+      blackPlayerId: black.id,
+      turn: Color.White
     })
 
-    players.forEach(p => game.addPlayer(p))
+    // TODO - pack into model
+    return game.id
   }
 
   async getGame(id: string): Promise<Game | undefined> {
-    const game: GameDbo | null = await GameDbo.findByPk(id)
+    const game: GameDbo | null = await GameDbo.findByPk(id, { include: ['white', 'black'] })
 
     if (game === null) {
       return undefined
     }
 
-    const players: PlayerDbo[] | null = await game.getPlayers()
-
-    return GameDao.convert(game, players)
+    return GameDao.convert(game)
   }
 
-  storeGame(game: Game) {
+  async storeGame(game: Game) {
     // Update game representation in database with timestamp of last update
     // Current game state (Pending, In Progress, Completed)
     // End reason - draw, checkmate, etc.
     // Winner?
 
-    GameDbo.update({
-      board: game.rep()
-    },
-      { where: { id: game.id } }
-    )
+    await GameDbo.update({ board: game.rep() }, { where: { id: game.id } })
   }
 
-  static convert(dbo: GameDbo, pdbos: PlayerDbo[]): Game {
-    const players: Player[] = pdbos.map(p => PlayerDao.convert(p))
-    return new Game(players, dbo.id, dbo.board)
+  static convert(dbo: GameDbo): Game {
+    const whitePlayer: Player = PlayerDao.convert(dbo.white)
+    const blackPlayer: Player = PlayerDao.convert(dbo.black)
+    return new Game(dbo.id, dbo.board, whitePlayer, blackPlayer)
   }
 }

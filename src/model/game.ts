@@ -1,20 +1,25 @@
 import { Chess, ChessInstance } from "chess.js";
 import { Player } from "./player";
+import { timeStamp } from "console";
 
 export class Game {
   id: string
   chess: ChessInstance
-  players: Player[]
+  white: Player
+  black: Player
 
-  constructor(players: Player[], id?: string, rep?: string) {
-    this.players = players
-    this.id = id || ''
-    this.chess = rep ? new Chess() : new Chess(rep)
+  constructor(id: string, board: string, white: Player, black: Player,) {
+    this.id = id
+    this.white = white
+    this.black = black
+    this.chess = new Chess(board)
   }
 
   makeMove(move: string) {
     this.chess.move(move)
     // this.chess.game_over()
+
+    // Flip turn
   }
 
   isMoveLegal(move: string): boolean {
@@ -23,5 +28,9 @@ export class Game {
 
   rep(): string {
     return this.chess.fen()
+  }
+
+  static emptyBoard(): string {
+    return new Chess().fen()
   }
 }
