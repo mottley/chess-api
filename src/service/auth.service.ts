@@ -4,12 +4,23 @@ import { Player } from '../model/player';
 import { InvalidUsernameError, InsecurePasswordError, InvalidCredentialsError, UnauthorizedError } from '../error';
 import zxcvbn from 'zxcvbn';
 import { Request } from 'express';
+import { SessionDbo } from '../dao/dbo/session.dbo';
+import { SignUpRequest } from './request/sign-up.request';
+
+type Callback<A> = (args: A) => void;
+
+const promisify = <T, A>(fn: (args: T, cb: Callback<A>) => void): ((args: T) => Promise<A>) =>
+  (args: T) => new Promise((resolve) => {
+    fn(args, (callbackArgs) => {
+      resolve(callbackArgs);
+    });
+  });
 
 const SALT_ROUNDS = 10;
 
 export class AuthenticationService {
 
-  constructor(private dao: PlayerDao) { }
+  constructor(private dao: PlayerDao) { SessionDbo.sync() }
 
   async signUp(username: string, plaintextPassword: string) {
     const player: Player | undefined = await this.dao.getPlayerByUsername(username)
@@ -27,7 +38,10 @@ export class AuthenticationService {
     return this.dao.createPlayer(username, hashedPassword)
   }
 
-  async login(username: string, plaintextPassword: string): Promise<Player> {
+  async login(req: Request<{}, {}, SignUpRequest>): Promise<Player> {
+    const username = req.body.username
+    const plaintextPassword = req.body.password
+
     const player: Player | undefined = await this.dao.getPlayerByUsername(username)
 
     if (player === undefined) {
@@ -37,6 +51,14 @@ export class AuthenticationService {
     const passwordsMatch: boolean = await bcrypt.compare(plaintextPassword, player.password)
     if (!passwordsMatch) {
       throw new InvalidCredentialsError()
+    }
+
+    // Clear all active sessions for player
+    await SessionDbo.destroy({ where: { playerId: player.id } })
+
+    // Forcibly re-generate if we already have an active session
+    if (req.session.playerId !== undefined) {
+      await this.regenerateSession(req)
     }
 
     return player
@@ -61,5 +83,16 @@ export class AuthenticationService {
   private isPasswordStrong(plaintextPassword: string, username: string): boolean {
     // Add in username in password to ensure username is not used as password
     return zxcvbn(plaintextPassword, [username]).score >= 3
+  }
+
+  private regenerateSession(req: Request): Promise<void> {
+    return new Promise((resolve, reject) => {
+      req.session.regenerate((err: any) => {
+        if (err != null) {
+          reject(err)
+        }
+        resolve()
+      })
+    })
   }
 }

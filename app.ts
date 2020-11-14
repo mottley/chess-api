@@ -34,7 +34,7 @@ app.use(session({
   saveUninitialized: false
 }))
 
-sessionStore.sync()
+// sessionStore.sync()
 
 app.get('/', (req, res) => res.send('Express + TypeScript Server'));
 
@@ -47,7 +47,8 @@ app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response, next:
 
 app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
   // console.log('Request body: ', req.body)
-  authService.login(req.body.username, req.body.password).then(r => {
+  authService.login(req).then(r => {
+    console.log(req.session)
     req.session.playerId = r.id
     res.status(200).send(r)
   }).catch(next)

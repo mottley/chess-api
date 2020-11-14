@@ -50,5 +50,6 @@ export class InsecurePasswordError extends HttpBadRequestError { }
 export class InvalidCredentialsError extends UnauthorizedError { }
 
 export const handleErrors = (err: HttpError, req: Request, res: Response, next: NextFunction) => {
+  // TODO - handle errors not http errors so that stack trace isn't returned
   next(err)
 }
