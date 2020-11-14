@@ -1,8 +1,8 @@
-import { Chess, ChessInstance } from 'chess.js';
 import { InvalidMoveError, UnauthorizedMoveError } from '../error';
 import { GameDao } from '../dao/game.dao';
 import { Game } from '../model/game';
 import { Player } from '../model/player';
+import { Color } from '../model/enum';
 
 export class GameService {
 
@@ -33,6 +33,7 @@ export class GameService {
     // Pull and initialize current game state
     const game: Game | undefined = await this.dao.getGame(gameId);
 
+    // TODO - pull out logic into checkAuthorizedMove method
     const playerInGame: boolean = game !== undefined &&
       (game.white.id === authenticatedPlayer.id || game.black.id === authenticatedPlayer.id)
 
@@ -40,7 +41,16 @@ export class GameService {
       throw new UnauthorizedMoveError(`Player not allowed to act on game: ${gameId}!`)
     }
 
-    // TODO - Check if player is allowed to make move/is their turn
+    const playerLookup = {
+      [Color.White]: game.white.id,
+      [Color.Black]: game.black.id
+    }
+
+    const isPlayersTurn: boolean = playerLookup[game.turn] === authenticatedPlayer.id
+
+    if (!isPlayersTurn) {
+      throw new UnauthorizedMoveError('Not your turn!')
+    }
 
     // Check if move is legal first
     if (!game.isMoveLegal(move)) {

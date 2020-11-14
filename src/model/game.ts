@@ -1,32 +1,38 @@
-import { Chess, ChessInstance } from "chess.js";
-import { Player } from "./player";
-import { timeStamp } from "console";
+import { Chess, ChessInstance } from 'chess.js';
+import { Player } from './player';
+import { Color } from './enum';
 
 export class Game {
   id: string
   chess: ChessInstance
   white: Player
   black: Player
+  turn: Color
 
-  constructor(id: string, board: string, white: Player, black: Player,) {
+  constructor(id: string, board: string, white: Player, black: Player, turn: Color) {
     this.id = id
     this.white = white
     this.black = black
     this.chess = new Chess(board)
+    this.turn = turn
   }
 
   makeMove(move: string) {
     this.chess.move(move)
-    // this.chess.game_over()
+    // TODO - check/handle game over
 
-    // Flip turn
+    const reverseTurnLookup = {
+      [Color.White]: Color.Black,
+      [Color.Black]: Color.White
+    }
+    this.turn = reverseTurnLookup[this.turn]
   }
 
   isMoveLegal(move: string): boolean {
     return this.chess.moves().includes(move)
   }
 
-  rep(): string {
+  board(): string {
     return this.chess.fen()
   }
 
