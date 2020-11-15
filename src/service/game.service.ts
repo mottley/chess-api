@@ -3,10 +3,11 @@ import { GameDao } from '../dao/game.dao';
 import { Game } from '../model/game';
 import { Player } from '../model/player';
 import { Color } from '../model/enum';
+import { MoveDao } from '../dao/move.dao';
 
 export class GameService {
 
-  constructor(private dao: GameDao) { }
+  constructor(private dao: GameDao, private mdao: MoveDao) { }
 
   async startGame(players: Player[]): Promise<string> {
 
@@ -64,12 +65,6 @@ export class GameService {
     await this.dao.storeGame(game)
 
     // Record move history
-  }
-
-  // TODO - pass in player
-  getMoveHistory(gameId: string) {
-    return
+    await this.mdao.storeMove(move, game, authenticatedPlayer)
   }
 }
-
-// new GameService(new GameDao()).makeMove('', '')

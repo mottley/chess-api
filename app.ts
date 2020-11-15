@@ -14,13 +14,14 @@ import session from 'express-session';
 import { getSequelizeStore } from './src/session.store';
 import { authenticated } from './src/authenticator';
 import { handleErrors } from './src/error';
+import { MoveDao } from './src/dao/move.dao';
 
 const playerDao = new PlayerDao();
 const authService = new AuthenticationService(playerDao);
 
 const gameDao = new GameDao();
-const gameService = new GameService(gameDao);
-
+const moveDao = new MoveDao();
+const gameService = new GameService(gameDao, moveDao);
 
 const sessionStore = getSequelizeStore();
 

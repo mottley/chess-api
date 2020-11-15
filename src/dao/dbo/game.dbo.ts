@@ -3,7 +3,6 @@ import { GameStatus, Color } from '../../model/enum';
 import { getOptions } from '../connection';
 import { PlayerDbo } from './player.dbo';
 
-// TODO - Keep track of turn
 interface GameAttributes {
   id: string,
   status: GameStatus,
