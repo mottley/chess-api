@@ -6,7 +6,7 @@ import { Player } from '../model/player';
 
 export class MoveDao {
   constructor() {
-    MoveDbo.sync()
+    MoveDbo.sync({ force: false })
   }
 
   async storeMove(move: string, game: Game, player: Player) {

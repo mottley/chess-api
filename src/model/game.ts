@@ -1,6 +1,6 @@
 import { Chess, ChessInstance } from 'chess.js';
 import { Player } from './player';
-import { Color } from './enum';
+import { Color, GameStatus, GameResult } from './enum';
 
 export class Game {
   id: string
@@ -8,18 +8,23 @@ export class Game {
   white: Player
   black: Player
   turn: Color
+  status: GameStatus
+  result?: GameResult
 
-  constructor(id: string, board: string, white: Player, black: Player, turn: Color) {
+  constructor(id: string, board: string, white: Player, black: Player, turn: Color, status: GameStatus) {
     this.id = id
     this.white = white
     this.black = black
     this.chess = new Chess(board)
     this.turn = turn
+    this.status = status
   }
 
   makeMove(move: string) {
     this.chess.move(move)
-    // TODO - check/handle game over
+
+    this.status = this.determineStatus()
+    this.result = this.determineResult()
 
     const reverseTurnLookup = {
       [Color.White]: Color.Black,
@@ -38,5 +43,33 @@ export class Game {
 
   static emptyBoard(): string {
     return new Chess().fen()
+  }
+
+  private determineStatus(): GameStatus {
+    switch (true) {
+      case this.chess.game_over():
+        return GameStatus.Completed
+      case this.chess.in_check():
+        return GameStatus.Check
+      default:
+        return GameStatus.InProgress
+    }
+  }
+
+  private determineResult(): GameResult | undefined {
+    switch (true) {
+      case this.chess.in_checkmate():
+        return GameResult.Checkmate
+      case this.chess.in_draw():
+        return GameResult.Draw
+      case this.chess.in_stalemate():
+        return GameResult.Stalemate
+      case this.chess.in_threefold_repetition():
+        return GameResult.ThreefoldRepetition
+      case this.chess.insufficient_material():
+        return GameResult.InsufficientMaterial
+      default:
+        return undefined
+    }
   }
 }

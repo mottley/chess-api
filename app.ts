@@ -15,6 +15,7 @@ import { getSequelizeStore } from './src/session.store';
 import { authenticated } from './src/authenticator';
 import { handleErrors } from './src/error';
 import { MoveDao } from './src/dao/move.dao';
+import { sequelizeConnection } from './src/dao/connection';
 
 const playerDao = new PlayerDao();
 const authService = new AuthenticationService(playerDao);
@@ -35,8 +36,6 @@ app.use(session({
   saveUninitialized: false
 }))
 
-// sessionStore.sync()
-
 app.get('/', (req, res) => res.send('Express + TypeScript Server'));
 
 app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
@@ -56,7 +55,7 @@ app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: Ne
 
 app.post('/game', async (req, res, next) => {
   const player1 = await playerDao.getPlayerByUsername('clayton')
-  const player2 = await playerDao.getPlayerByUsername('clayton5')
+  const player2 = await playerDao.getPlayerByUsername('clayton1')
 
 
   // const game = new Game([])

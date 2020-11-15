@@ -15,6 +15,7 @@ export class GameService {
     let whitePlayer: Player;
     let blackPlayer: Player;
 
+    // TODO - use secure random generation here
     const firstChance = Math.random() * 100;
     const secondChance = Math.random() * 100;
 

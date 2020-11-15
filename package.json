@@ -9,7 +9,7 @@
   "scripts": {
     "start": "nodemon --exec ts-node -T app.ts",
     "build": "tsc --project ./",
-    "test": "ts-node src/dao/player.dao.ts"
+    "test": "ts-node example.chess.ts"
   },
   "dependencies": {
     "ajv": "^7.0.0-beta.3",

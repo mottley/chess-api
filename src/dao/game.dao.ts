@@ -42,12 +42,17 @@ export class GameDao {
     // End reason - draw, checkmate, etc.
     // Winner?
 
-    await GameDbo.update({ board: game.board(), turn: game.turn }, { where: { id: game.id } })
+    await GameDbo.update({
+      board: game.board(),
+      turn: game.turn,
+      status: game.status,
+      result: game.result
+    }, { where: { id: game.id } })
   }
 
   static convert(dbo: GameDbo): Game {
     const whitePlayer: Player = PlayerDao.convert(dbo.white)
     const blackPlayer: Player = PlayerDao.convert(dbo.black)
-    return new Game(dbo.id, dbo.board, whitePlayer, blackPlayer, dbo.turn)
+    return new Game(dbo.id, dbo.board, whitePlayer, blackPlayer, dbo.turn, dbo.status)
   }
 }

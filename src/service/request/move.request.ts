@@ -25,7 +25,7 @@ export const moveRequestSchema: JSONSchemaType<MoveRequest> = {
   properties: {
     move: {
       type: 'string',
-      pattern: '^[A-Za-z]{1,3}[0-9]$'
+      pattern: '^[A-Za-z]{1,3}[0-9](\\+|#)?$' // TODO - re-evaluate regex here
     },
   },
   required: ['move'],

@@ -1,5 +1,5 @@
 import { Model, DataTypes, InitOptions, Optional, HasManyAddAssociationMixin, Association, HasManyGetAssociationsMixin } from 'sequelize';
-import { GameStatus, Color } from '../../model/enum';
+import { GameStatus, Color, GameResult } from '../../model/enum';
 import { getOptions } from '../connection';
 import { PlayerDbo } from './player.dbo';
 
@@ -8,7 +8,7 @@ interface GameAttributes {
   status: GameStatus,
   board: string,
   winner: PlayerDbo,
-  result: string, // TODO - enum
+  result: GameResult,
   white: PlayerDbo,
   black: PlayerDbo,
   turn: Color
@@ -28,7 +28,7 @@ export class GameDbo extends Model<GameAttributes, GameCreationAttributes> imple
   public board!: string
   public winner!: PlayerDbo
 
-  public result!: string
+  public result!: GameResult
 
   public white!: PlayerDbo
   public black!: PlayerDbo
@@ -69,7 +69,8 @@ GameDbo.init({
     allowNull: false
   },
   result: {
-    type: DataTypes.STRING
+    type: DataTypes.ENUM,
+    values: Object.values(GameResult)
   }
 },
   options
