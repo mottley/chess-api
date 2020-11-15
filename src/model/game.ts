@@ -28,11 +28,7 @@ export class Game {
     this.result = this.determineResult()
     this.winner = this.determineWinner()
 
-    const reverseTurnLookup = {
-      [Color.White]: Color.Black,
-      [Color.Black]: Color.White
-    }
-    this.turn = reverseTurnLookup[this.turn]
+    this.turn = this.determineTurn()
   }
 
   isMoveLegal(move: string): boolean {
@@ -87,5 +83,13 @@ export class Game {
     }
 
     return playerLookup[this.turn]
+  }
+
+  private determineTurn(): Color {
+    const reverseTurnLookup = {
+      [Color.White]: Color.Black,
+      [Color.Black]: Color.White
+    }
+    return reverseTurnLookup[this.turn]
   }
 }
