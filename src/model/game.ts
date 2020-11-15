@@ -9,6 +9,7 @@ export class Game {
   black: Player
   turn: Color
   status: GameStatus
+  winner?: Player
   result?: GameResult
 
   constructor(id: string, board: string, white: Player, black: Player, turn: Color, status: GameStatus) {
@@ -25,6 +26,7 @@ export class Game {
 
     this.status = this.determineStatus()
     this.result = this.determineResult()
+    this.winner = this.determineWinner()
 
     const reverseTurnLookup = {
       [Color.White]: Color.Black,
@@ -71,5 +73,19 @@ export class Game {
       default:
         return undefined
     }
+  }
+
+  private determineWinner(): Player | undefined {
+    const winnerExists = this.chess.in_checkmate()
+    if (!winnerExists) {
+      return
+    }
+
+    const playerLookup = {
+      [Color.White]: this.white,
+      [Color.Black]: this.black
+    }
+
+    return playerLookup[this.turn]
   }
 }

@@ -11,7 +11,8 @@ interface GameAttributes {
   result: GameResult,
   white: PlayerDbo,
   black: PlayerDbo,
-  turn: Color
+  turn: Color,
+  winnerId?: string
 }
 
 
@@ -78,7 +79,7 @@ GameDbo.init({
 
 // GameDbo.belongsTo(PlayerDbo, { foreignKey: 'winner' }) // TODO - mark `allowNull: true`
 // GameDbo.belongsToMany(PlayerDbo, { through: 'PlayerGames' })
-// GameDbo.belongsTo(PlayerDbo, { foreignKey: 'winner' }) // TODO - mark `allowNull: true`
+GameDbo.belongsTo(PlayerDbo, { as: 'winner', foreignKey: 'winnerId' }) // TODO - mark `allowNull: true`
 GameDbo.belongsTo(PlayerDbo, { as: 'white', foreignKey: 'whitePlayerId' })
 GameDbo.belongsTo(PlayerDbo, { as: 'black', foreignKey: 'blackPlayerId' })
 

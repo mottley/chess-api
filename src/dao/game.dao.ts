@@ -37,16 +37,12 @@ export class GameDao {
   }
 
   async storeGame(game: Game) {
-    // Update game representation in database with timestamp of last update
-    // Current game state (Pending, In Progress, Completed)
-    // End reason - draw, checkmate, etc.
-    // Winner?
-
     await GameDbo.update({
       board: game.board(),
       turn: game.turn,
       status: game.status,
-      result: game.result
+      result: game.result,
+      winnerId: game.winner ? game.winner.id : undefined
     }, { where: { id: game.id } })
   }
 
