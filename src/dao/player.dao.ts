@@ -38,6 +38,11 @@ export class PlayerDao {
       })
   }
 
+  async getAllPlayers(): Promise<Player[]> {
+    const players: PlayerDbo[] = await PlayerDbo.findAll()
+    return players.map(p => PlayerDao.convert(p))
+  }
+
   static convert(dbo: PlayerDbo): Player {
     return new Player(dbo.id, dbo.username, dbo.password)
   }

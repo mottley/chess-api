@@ -25,7 +25,7 @@ const gameDao = new GameDao();
 const moveDao = new MoveDao();
 const gameService = new GameService(gameDao, moveDao);
 
-const historyService = new HistoryService(gameDao, moveDao);
+const historyService = new HistoryService(gameDao, moveDao, playerDao);
 
 const sessionStore = getSequelizeStore();
 
@@ -88,6 +88,13 @@ app.get('/session', authenticated, (req, res) => {
   console.log(res.locals.player)
   res.send(req.session.playerId)
 })
+
+app.get('/record', authenticated, (req, res) => {
+  historyService.getPlayerRecords().then(r => {
+    res.send(200)
+  })
+})
+
 
 app.use(handleErrors)
 

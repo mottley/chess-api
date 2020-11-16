@@ -12,13 +12,16 @@ export class Game {
   winner?: Player
   result?: GameResult
 
-  constructor(id: string, board: string, white: Player, black: Player, turn: Color, status: GameStatus) {
+  constructor(id: string, board: string, white: Player, black: Player,
+    turn: Color, status: GameStatus, winner?: Player, result?: GameResult) {
     this.id = id
     this.white = white
     this.black = black
     this.chess = new Chess(board)
     this.turn = turn
     this.status = status
+    this.winner = winner
+    this.result = result
   }
 
   makeMove(move: string) {

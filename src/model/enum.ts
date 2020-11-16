@@ -19,3 +19,9 @@ export enum GameResult {
   ThreefoldRepetition = 'threefold repetition',
   InsufficientMaterial = 'insufficient material'
 }
+
+export enum GameRecord {
+  Win = 'win',
+  Draw = 'draw',
+  Loss = 'loss'
+}

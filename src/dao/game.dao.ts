@@ -46,9 +46,15 @@ export class GameDao {
     }, { where: { id: game.id } })
   }
 
+  async getGamesByStatus(status: GameStatus): Promise<Game[]> {
+    const games: GameDbo[] = await GameDbo.findAll({ where: { status: status }, include: { all: true } })
+    return games.map(g => GameDao.convert(g))
+  }
+
   static convert(dbo: GameDbo): Game {
     const whitePlayer: Player = PlayerDao.convert(dbo.white)
     const blackPlayer: Player = PlayerDao.convert(dbo.black)
-    return new Game(dbo.id, dbo.board, whitePlayer, blackPlayer, dbo.turn, dbo.status)
+    const winner: Player = PlayerDao.convert(dbo.winner)
+    return new Game(dbo.id, dbo.board, whitePlayer, blackPlayer, dbo.turn, dbo.status, winner, dbo.result)
   }
 }
