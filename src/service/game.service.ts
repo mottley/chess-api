@@ -4,6 +4,7 @@ import { Game } from '../model/game';
 import { Player } from '../model/player';
 import { Color, GameStatus } from '../model/enum';
 import { MoveDao } from '../dao/move.dao';
+import crypto from 'crypto';
 
 export class GameService {
 
@@ -11,22 +12,13 @@ export class GameService {
 
   async startGame(players: Player[]): Promise<string> {
 
-    // TODO - cleanup maybe
-    let whitePlayer: Player;
-    let blackPlayer: Player;
+    const shuffledPlayers: Player[] = players
+      .map(p => ({ chance: crypto.randomInt(100), value: p }))
+      .sort((a, b) => a.chance - b.chance)
+      .map(s => s.value)
 
-    // TODO - use secure random generation here
-    const firstChance = Math.random() * 100;
-    const secondChance = Math.random() * 100;
-
-    if (firstChance > secondChance) {
-      whitePlayer = players[0]
-      blackPlayer = players[1]
-    }
-    else {
-      whitePlayer = players[1]
-      blackPlayer = players[0]
-    }
+    const whitePlayer: Player = shuffledPlayers[0]
+    const blackPlayer: Player = shuffledPlayers[1]
 
     return this.dao.createGame(Game.emptyBoard(), whitePlayer, blackPlayer)
   }
