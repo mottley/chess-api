@@ -21,7 +21,7 @@ export class HttpError extends Error {
   }
 }
 
-export class HttpBadRequestError extends HttpError {
+export class BadRequestError extends HttpError {
   constructor(message = 'Bad request') {
     super(message, HttpResponseCode.BadRequest);
   }
@@ -39,13 +39,13 @@ export class ForbiddenError extends HttpError {
   }
 }
 
-export class InvalidMoveError extends HttpBadRequestError { }
+export class InvalidMoveError extends BadRequestError { }
 
 export class UnauthorizedMoveError extends ForbiddenError { }
 
-export class InvalidUsernameError extends HttpBadRequestError { }
+export class InvalidUsernameError extends BadRequestError { }
 
-export class InsecurePasswordError extends HttpBadRequestError { }
+export class InsecurePasswordError extends BadRequestError { }
 
 export class InvalidCredentialsError extends UnauthorizedError { }
 

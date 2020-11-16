@@ -2,7 +2,7 @@ import { InvalidMoveError, UnauthorizedMoveError } from '../error';
 import { GameDao } from '../dao/game.dao';
 import { Game } from '../model/game';
 import { Player } from '../model/player';
-import { Color } from '../model/enum';
+import { Color, GameStatus } from '../model/enum';
 import { MoveDao } from '../dao/move.dao';
 
 export class GameService {
@@ -41,6 +41,11 @@ export class GameService {
 
     if (game === undefined || !playerInGame) {
       throw new UnauthorizedMoveError(`Player not allowed to act on game: ${gameId}!`)
+    }
+
+    // Check if game is still `in progress`
+    if (game.status !== GameStatus.InProgress) {
+      throw new UnauthorizedMoveError(`Game: ${gameId} is not currently in progress!`)
     }
 
     const playerLookup = {

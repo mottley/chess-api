@@ -55,6 +55,7 @@ export class AuthenticationService {
     return player
   }
 
+  // TODO - finish logout functionality
   async logout(req: Request): Promise<void> {
     const playerId: string | undefined = req.session.playerId
     if (req.session.playerId === undefined) {

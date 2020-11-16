@@ -16,6 +16,7 @@ import { authenticated } from './src/authenticator';
 import { handleErrors } from './src/error';
 import { MoveDao } from './src/dao/move.dao';
 import { sequelizeConnection } from './src/dao/connection';
+import { HistoryService } from './src/service/history.service';
 
 const playerDao = new PlayerDao();
 const authService = new AuthenticationService(playerDao);
@@ -23,6 +24,8 @@ const authService = new AuthenticationService(playerDao);
 const gameDao = new GameDao();
 const moveDao = new MoveDao();
 const gameService = new GameService(gameDao, moveDao);
+
+const historyService = new HistoryService(gameDao, moveDao);
 
 const sessionStore = getSequelizeStore();
 
@@ -72,6 +75,12 @@ app.post('/game', async (req, res, next) => {
 app.post('/game/:gameId/move', authenticated, validateMove, (req: Request<MoveParams, {}, MoveRequest>, res: Response, next: NextFunction) => {
   gameService.makeMove(res.locals.player, req.params.gameId, req.body.move).then(() => {
     res.status(200).end()
+  }).catch(next)
+})
+
+app.get('/game/:gameId/move', authenticated, (req: Request<MoveParams>, res: Response, next: NextFunction) => {
+  historyService.getGameMoves(res.locals.player, req.params.gameId).then(moves => {
+    res.status(200).send(moves)
   }).catch(next)
 })
 

@@ -7,7 +7,9 @@ interface MoveAttributes {
   id: string,
   move: string,
   game: GameDbo,
-  player: PlayerDbo
+  player: PlayerDbo,
+
+  gameId?: string
 }
 
 interface MoveCreationAttributes extends Optional<MoveAttributes, 'id' | 'game' | 'player'> {
