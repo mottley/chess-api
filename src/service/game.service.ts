@@ -1,4 +1,4 @@
-import { InvalidMoveError, UnauthorizedMoveError } from '../error';
+import { InvalidMoveError, UnauthorizedMoveError, DuplicatePlayerError } from '../error';
 import { GameDao } from '../dao/game.dao';
 import { Game } from '../model/game';
 import { Player } from '../model/player';
@@ -6,7 +6,6 @@ import { Color, GameStatus } from '../model/enum';
 import { MoveDao } from '../dao/move.dao';
 import crypto from 'crypto';
 import { GameResponse } from './response/game.response';
-import { timeStamp } from 'console';
 
 export class GameService {
 
@@ -15,6 +14,11 @@ export class GameService {
   constructor(private dao: GameDao, private mdao: MoveDao) { }
 
   async startGame(players: Player[]): Promise<GameResponse> {
+
+    // Check that both players are not the same
+    if (players[0].id === players[1].id) {
+      throw new DuplicatePlayerError('Must be different players to start a game!')
+    }
 
     const shuffledPlayers: Player[] = players
       .map(p => ({ chance: crypto.randomInt(100), value: p }))

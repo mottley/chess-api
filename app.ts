@@ -17,6 +17,9 @@ import { handleErrors } from './src/error';
 import { MoveDao } from './src/dao/move.dao';
 import { sequelizeConnection } from './src/dao/connection';
 import { HistoryService } from './src/service/history.service';
+import { RoomRequest } from './src/service/request/room.request';
+import { RoomService } from './src/service/room.service';
+import { RoomDao } from './src/dao/room.dao';
 
 const playerDao = new PlayerDao();
 const authService = new AuthenticationService(playerDao);
@@ -26,6 +29,9 @@ const moveDao = new MoveDao();
 const gameService = new GameService(gameDao, moveDao);
 
 const historyService = new HistoryService(gameDao, moveDao, playerDao);
+
+const roomDao = new RoomDao();
+const roomService = new RoomService(roomDao, gameService);
 
 const sessionStore = getSequelizeStore();
 
@@ -53,6 +59,18 @@ app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: Ne
   authService.login(req).then(r => {
     req.session.playerId = r.id
     res.status(200).send(r)
+  }).catch(next)
+})
+
+app.post('/room', authenticated, (req: Request<{}, {}, RoomRequest>, res: Response, next: NextFunction) => {
+  roomService.createRoom(res.locals.player, req.body.name).then(() => {
+    res.status(200).end()
+  }).catch(next)
+})
+
+app.post('/room/:roomId', authenticated, (req: Request, res: Response, next: NextFunction) => {
+  roomService.joinRoom(res.locals.player, req.params.roomId).then(() => {
+    res.status(200).end()
   }).catch(next)
 })
 

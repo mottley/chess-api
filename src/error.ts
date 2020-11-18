@@ -21,6 +21,12 @@ export class HttpError extends Error {
   }
 }
 
+export class NotFoundError extends HttpError {
+  constructor(message = 'Not found') {
+    super(message, HttpResponseCode.NotFound);
+  }
+}
+
 export class BadRequestError extends HttpError {
   constructor(message = 'Bad request') {
     super(message, HttpResponseCode.BadRequest);
@@ -48,6 +54,10 @@ export class InvalidUsernameError extends BadRequestError { }
 export class InsecurePasswordError extends BadRequestError { }
 
 export class InvalidCredentialsError extends UnauthorizedError { }
+
+export class RoomNotFoundError extends NotFoundError { }
+
+export class DuplicatePlayerError extends BadRequestError { }
 
 export const handleErrors = (err: HttpError, req: Request, res: Response, next: NextFunction) => {
   // TODO - handle errors not http errors so that stack trace isn't returned

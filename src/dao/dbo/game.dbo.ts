@@ -38,15 +38,6 @@ export class GameDbo extends Model<GameAttributes, GameCreationAttributes> imple
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-
-  // public getPlayers!: HasManyGetAssociationsMixin<PlayerDbo>;
-  // public addPlayer!: HasManyAddAssociationMixin<GameDbo, PlayerDbo>;
-
-  // public readonly players?: PlayerDbo[]
-
-  // public static associations: {
-  //   players: Association<GameDbo, PlayerDbo>;
-  // };
 }
 
 GameDbo.init({
@@ -77,8 +68,6 @@ GameDbo.init({
   options
 );
 
-// GameDbo.belongsTo(PlayerDbo, { foreignKey: 'winner' }) // TODO - mark `allowNull: true`
-// GameDbo.belongsToMany(PlayerDbo, { through: 'PlayerGames' })
 GameDbo.belongsTo(PlayerDbo, { as: 'winner', foreignKey: 'winnerId' }) // TODO - mark `allowNull: true`
 GameDbo.belongsTo(PlayerDbo, { as: 'white', foreignKey: 'whitePlayerId' })
 GameDbo.belongsTo(PlayerDbo, { as: 'black', foreignKey: 'blackPlayerId' })
