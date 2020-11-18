@@ -12,9 +12,8 @@ export class GameDao {
     GameDbo.sync({ force: false })
   }
 
-  async createGame(board: string, white: Player, black: Player): Promise<string> {
-
-    const game: GameDbo = await GameDbo.create({
+  async createGame(board: string, white: Player, black: Player): Promise<Game> {
+    const initialGame: GameDbo = await GameDbo.create({
       status: GameStatus.InProgress,
       board: board,
       whitePlayerId: white.id,
@@ -22,8 +21,8 @@ export class GameDao {
       turn: Color.White
     })
 
-    // TODO - pack into model
-    return game.id
+    const game: Game = (await this.getGame(initialGame.id))!
+    return game
   }
 
   async getGame(id: string): Promise<Game | undefined> {
@@ -54,7 +53,8 @@ export class GameDao {
   static convert(dbo: GameDbo): Game {
     const whitePlayer: Player = PlayerDao.convert(dbo.white)
     const blackPlayer: Player = PlayerDao.convert(dbo.black)
-    const winner: Player = PlayerDao.convert(dbo.winner)
-    return new Game(dbo.id, dbo.board, whitePlayer, blackPlayer, dbo.turn, dbo.status, winner, dbo.result)
+    const winner: Player | undefined = dbo.winner ? PlayerDao.convert(dbo.winner) : undefined
+    return new Game(dbo.id, dbo.board, whitePlayer, blackPlayer,
+      dbo.turn, dbo.status, dbo.updatedAt, winner, dbo.result)
   }
 }

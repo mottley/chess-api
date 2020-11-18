@@ -5,12 +5,16 @@ import { Player } from '../model/player';
 import { Color, GameStatus } from '../model/enum';
 import { MoveDao } from '../dao/move.dao';
 import crypto from 'crypto';
+import { GameResponse } from './response/game.response';
+import { timeStamp } from 'console';
 
 export class GameService {
 
+  private TURN_TIMER = 60;
+
   constructor(private dao: GameDao, private mdao: MoveDao) { }
 
-  async startGame(players: Player[]): Promise<string> {
+  async startGame(players: Player[]): Promise<GameResponse> {
 
     const shuffledPlayers: Player[] = players
       .map(p => ({ chance: crypto.randomInt(100), value: p }))
@@ -20,7 +24,9 @@ export class GameService {
     const whitePlayer: Player = shuffledPlayers[0]
     const blackPlayer: Player = shuffledPlayers[1]
 
-    return this.dao.createGame(Game.emptyBoard(), whitePlayer, blackPlayer)
+    const game: Game = await this.dao.createGame(Game.emptyBoard(), whitePlayer, blackPlayer)
+
+    return this.createResponse(game)
   }
 
   async makeMove(authenticatedPlayer: Player, gameId: string, move: string) {
@@ -64,5 +70,26 @@ export class GameService {
 
     // Record move history
     await this.mdao.storeMove(move, game, authenticatedPlayer)
+  }
+
+  private createResponse(game: Game): GameResponse {
+    return {
+      gameId: game.id,
+      status: game.status,
+      turn: game.turn,
+      board: game.board(),
+      players: {
+        white: game.white.username,
+        black: game.black.username
+      },
+      moveTimer: this.calculateEndOfTurn(game.lastUpdate),
+      moves: []
+    }
+  }
+
+  private calculateEndOfTurn(lastMove: Date): Date {
+    const endOfTurn: Date = new Date(lastMove.getTime())
+    endOfTurn.setSeconds(endOfTurn.getSeconds() + this.TURN_TIMER)
+    return endOfTurn
   }
 }
