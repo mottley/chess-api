@@ -33,11 +33,23 @@ export class GameService {
     return this.createResponse(game)
   }
 
-  async makeMove(authenticatedPlayer: Player, gameId: string, move: string) {
+  async getGame(authenticatedPlayer: Player, gameId: string): Promise<GameResponse> {
+    const game: Game | undefined = await this.dao.getGame(gameId);
+
+    const playerInGame: boolean = game !== undefined &&
+      (game.white.id === authenticatedPlayer.id || game.black.id === authenticatedPlayer.id)
+
+    if (game === undefined || !playerInGame) {
+      throw new UnauthorizedMoveError(`Player not allowed to view game: ${gameId}!`)
+    }
+
+    return this.createResponse(game)
+  }
+
+  async makeMove(authenticatedPlayer: Player, gameId: string, move: string): Promise<GameResponse> {
     // Pull and initialize current game state
     const game: Game | undefined = await this.dao.getGame(gameId);
 
-    // TODO - pull out logic into checkAuthorizedMove method
     const playerInGame: boolean = game !== undefined &&
       (game.white.id === authenticatedPlayer.id || game.black.id === authenticatedPlayer.id)
 
@@ -46,7 +58,7 @@ export class GameService {
     }
 
     // Check if game is still `in progress`
-    if (game.status !== GameStatus.InProgress) {
+    if (game.status !== GameStatus.InProgress && game.status !== GameStatus.Check) {
       throw new UnauthorizedMoveError(`Game: ${gameId} is not currently in progress!`)
     }
 
@@ -74,7 +86,25 @@ export class GameService {
 
     // Record move history
     await this.mdao.storeMove(move, game, authenticatedPlayer)
+
+    return this.createResponse(game)
   }
+
+  // Check if player is authorized to make a move/view an in progress game
+  // private checkPlayerAuthorized(authenticatedPlayer: Player, game: Game) {
+  //   const playerInGame: boolean = game !== undefined &&
+  //     (game.white.id === authenticatedPlayer.id || game.black.id === authenticatedPlayer.id)
+
+  //   // TODO - update errors
+  //   if (game === undefined || !playerInGame) {
+  //     throw new UnauthorizedMoveError(`Player not allowed to act on or view game: ${game.id}!`)
+  //   }
+
+  //   // Check if game is still `in progress`
+  //   if (game.status !== GameStatus.InProgress) {
+  //     throw new UnauthorizedMoveError(`Game: ${game.id} is not currently in progress!`)
+  //   }
+  // }
 
   private createResponse(game: Game): GameResponse {
     return {

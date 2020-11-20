@@ -20,6 +20,7 @@ import { HistoryService } from './src/service/history.service';
 import { RoomRequest } from './src/service/request/room.request';
 import { RoomService } from './src/service/room.service';
 import { RoomDao } from './src/dao/room.dao';
+import cors from 'cors';
 
 const playerDao = new PlayerDao();
 const authService = new AuthenticationService(playerDao);
@@ -36,6 +37,7 @@ const roomService = new RoomService(roomDao, gameService);
 const sessionStore = getSequelizeStore();
 
 const app = express();
+app.use(cors({ credentials: true }))
 app.use(bodyParser.json())
 app.use(session({
   secret: 'test-secret',
@@ -57,6 +59,7 @@ app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response, next:
 app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
   // console.log('Request body: ', req.body)
   authService.login(req).then(r => {
+    // Set player id in session
     req.session.playerId = r.id
     res.status(200).send(r)
   }).catch(next)
@@ -90,9 +93,19 @@ app.post('/game', async (req, res, next) => {
   }).catch(next)
 })
 
+app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
+
+})
+
+app.get('/game/:gameId', authenticated, (req: Request<MoveParams, {}, {}>, res: Response, next: NextFunction) => {
+  gameService.getGame(res.locals.player, req.params.gameId).then(g => {
+    res.status(200).send(g)
+  }).catch(next)
+})
+
 app.post('/game/:gameId/move', authenticated, validateMove, (req: Request<MoveParams, {}, MoveRequest>, res: Response, next: NextFunction) => {
-  gameService.makeMove(res.locals.player, req.params.gameId, req.body.move).then(() => {
-    res.status(200).end()
+  gameService.makeMove(res.locals.player, req.params.gameId, req.body.move).then(g => {
+    res.status(200).send(g)
   }).catch(next)
 })
 

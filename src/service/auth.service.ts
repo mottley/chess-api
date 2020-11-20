@@ -6,6 +6,7 @@ import zxcvbn from 'zxcvbn';
 import { Request } from 'express';
 import { SessionDbo } from '../dao/dbo/session.dbo';
 import { SignUpRequest } from './request/sign-up.request';
+import { PlayerResponse } from './response/player.response';
 
 const SALT_ROUNDS = 10;
 
@@ -29,7 +30,7 @@ export class AuthenticationService {
     return this.dao.createPlayer(username, hashedPassword)
   }
 
-  async login(req: Request<{}, {}, SignUpRequest>): Promise<Player> {
+  async login(req: Request<{}, {}, SignUpRequest>): Promise<PlayerResponse> {
     const username = req.body.username
     const plaintextPassword = req.body.password
 
@@ -52,7 +53,11 @@ export class AuthenticationService {
       await this.regenerateSession(req)
     }
 
-    return player
+    return this.createResponse(player)
+  }
+
+  async getPlayer(authenticatedPlayer: Player) {
+    return this.createResponse(authenticatedPlayer)
   }
 
   // TODO - finish logout functionality
@@ -82,6 +87,13 @@ export class AuthenticationService {
     }
 
     return player
+  }
+
+  private createResponse(player: Player): PlayerResponse {
+    return {
+      id: player.id,
+      username: player.username
+    }
   }
 
   private isPasswordStrong(plaintextPassword: string, username: string): boolean {

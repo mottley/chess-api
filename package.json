@@ -12,12 +12,14 @@
     "test": "ts-node example.chess.ts"
   },
   "dependencies": {
+    "@types/cors": "^2.8.8",
     "ajv": "^7.0.0-beta.3",
     "ajv-formats": "^0.4.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "chess.js": "^0.11.0",
     "connect-session-sequelize": "^7.0.4",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "mysql2": "^2.2.5",
