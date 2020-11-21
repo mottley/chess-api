@@ -77,6 +77,12 @@ export class GameService {
       throw new UnauthorizedMoveError('Not your turn!')
     }
 
+    const endOfTurn: Date = this.calculateEndOfTurn(game.lastUpdate)
+    const currentTime: Date = new Date();
+    if (endOfTurn < currentTime) {
+      throw new UnauthorizedMoveError('Game is expired!')
+    }
+
     // Check if move is legal first
     if (!game.isMoveLegal(move)) {
       throw new InvalidMoveError(`Move: ${move} is not legal!`)
@@ -92,6 +98,8 @@ export class GameService {
     await this.mdao.storeMove(move, game, authenticatedPlayer)
 
     const moves: Move[] = await this.mdao.getMovesByGameId(game.id)
+
+    // TODO - close rooms in room service
 
     return this.createResponse(game, moves)
   }
@@ -112,6 +120,8 @@ export class GameService {
 
     expiredGames.forEach(g => g.expireGame())
     expiredGames.forEach(async g => await this.dao.storeGame(g))
+
+    // TODO - close rooms in room service
   }
 
   private createResponse(game: Game, moves: Move[]): GameResponse {
