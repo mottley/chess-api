@@ -96,6 +96,24 @@ export class GameService {
     return this.createResponse(game, moves)
   }
 
+  async forfeitExpiredGames(): Promise<void> {
+    const activeGames: Game[] = await this.dao.getGamesByStatus([GameStatus.InProgress])
+
+    const gamesWithEndOfTurn = activeGames.map(g => ({
+      game: g,
+      end: this.calculateEndOfTurn(g.lastUpdate)
+    }))
+
+    const currentTime = new Date();
+
+    const expiredGames: Game[] = gamesWithEndOfTurn
+      .filter(ge => ge.end < currentTime)
+      .map(ge => ge.game)
+
+    expiredGames.forEach(g => g.expireGame())
+    expiredGames.forEach(async g => await this.dao.storeGame(g))
+  }
+
   private createResponse(game: Game, moves: Move[]): GameResponse {
     const playerColorLookup = {
       [game.white.id]: Color.White,

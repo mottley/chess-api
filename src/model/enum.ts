@@ -12,6 +12,7 @@ export enum GameStatus {
 }
 
 export enum GameResult {
+  Forfeit = 'forfeit',
   Checkmate = 'checkmate',
   Draw = 'draw',
   Stalemate = 'stalemate',

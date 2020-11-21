@@ -35,7 +35,7 @@ export class HistoryService {
 
   async getPlayerRecords() {
     const allPlayers: Player[] = await this.pdao.getAllPlayers()
-    const completedGames: Game[] = await this.gdao.getGamesByStatus(GameStatus.Completed)
+    const completedGames: Game[] = await this.gdao.getGamesByStatus([GameStatus.Completed])
 
     const playerRecordMapping = allPlayers.reduce((map, p) => {
       map[p.id] = new Record()
