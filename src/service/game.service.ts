@@ -7,10 +7,11 @@ import { MoveDao } from '../dao/move.dao';
 import crypto from 'crypto';
 import { GameResponse } from './response/game.response';
 import { RoomDao } from '../dao/room.dao';
+import { Move } from '../model/move';
 
 export class GameService {
 
-  private TURN_TIMER = 60;
+  private TURN_TIMER = 90;
 
   constructor(private dao: GameDao, private mdao: MoveDao, private rdao: RoomDao) { }
 
@@ -31,7 +32,7 @@ export class GameService {
 
     const game: Game = await this.dao.createGame(Game.emptyBoard(), whitePlayer, blackPlayer)
 
-    return this.createResponse(game)
+    return this.createResponse(game, [])
   }
 
   async getGame(authenticatedPlayer: Player, gameId: string): Promise<GameResponse> {
@@ -44,7 +45,9 @@ export class GameService {
       throw new UnauthorizedMoveError(`Player not allowed to view game: ${gameId}!`)
     }
 
-    return this.createResponse(game)
+    const moves: Move[] = await this.mdao.getMovesByGameId(game.id)
+
+    return this.createResponse(game, moves)
   }
 
   async makeMove(authenticatedPlayer: Player, gameId: string, move: string): Promise<GameResponse> {
@@ -88,26 +91,17 @@ export class GameService {
     // Record move history
     await this.mdao.storeMove(move, game, authenticatedPlayer)
 
-    return this.createResponse(game)
+    const moves: Move[] = await this.mdao.getMovesByGameId(game.id)
+
+    return this.createResponse(game, moves)
   }
 
-  // Check if player is authorized to make a move/view an in progress game
-  // private checkPlayerAuthorized(authenticatedPlayer: Player, game: Game) {
-  //   const playerInGame: boolean = game !== undefined &&
-  //     (game.white.id === authenticatedPlayer.id || game.black.id === authenticatedPlayer.id)
+  private createResponse(game: Game, moves: Move[]): GameResponse {
+    const playerColorLookup = {
+      [game.white.id]: Color.White,
+      [game.black.id]: Color.Black
+    }
 
-  //   // TODO - update errors
-  //   if (game === undefined || !playerInGame) {
-  //     throw new UnauthorizedMoveError(`Player not allowed to act on or view game: ${game.id}!`)
-  //   }
-
-  //   // Check if game is still `in progress`
-  //   if (game.status !== GameStatus.InProgress) {
-  //     throw new UnauthorizedMoveError(`Game: ${game.id} is not currently in progress!`)
-  //   }
-  // }
-
-  private createResponse(game: Game): GameResponse {
     return {
       gameId: game.id,
       status: game.status,
@@ -118,7 +112,12 @@ export class GameService {
         black: game.black.username
       },
       moveTimer: this.calculateEndOfTurn(game.lastUpdate),
-      moves: []
+      moves: moves.map(m => ({
+        move: m.move,
+        username: m.player.username,
+        color: playerColorLookup[m.player.id],
+        time: m.timestamp
+      }))
     }
   }
 
