@@ -48,6 +48,12 @@ export class Game {
     return new Chess().fen()
   }
 
+  expireGame() {
+    this.winner = this.determineWinnerExpired()
+    this.status = GameStatus.Completed
+    this.result = GameResult.Forfeit
+  }
+
   private determineStatus(): GameStatus {
     switch (true) {
       case this.chess.game_over():
@@ -96,5 +102,13 @@ export class Game {
       [Color.Black]: Color.White
     }
     return reverseTurnLookup[this.turn]
+  }
+
+  private determineWinnerExpired(): Player {
+    const reversePlayerLookup = {
+      [Color.White]: this.black,
+      [Color.Black]: this.white
+    }
+    return reversePlayerLookup[this.turn]
   }
 }

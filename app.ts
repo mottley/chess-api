@@ -21,6 +21,7 @@ import { RoomRequest } from './src/service/request/room.request';
 import { RoomService } from './src/service/room.service';
 import { RoomDao } from './src/dao/room.dao';
 import cors from 'cors';
+import cron from 'node-cron';
 
 const playerDao = new PlayerDao();
 const authService = new AuthenticationService(playerDao);
@@ -83,24 +84,24 @@ app.post('/room/:roomName', authenticated, (req: Request, res: Response, next: N
   }).catch(next)
 })
 
-app.post('/game', async (req, res, next) => {
-  const player1 = await playerDao.getPlayerByUsername('clayton')
-  const player2 = await playerDao.getPlayerByUsername('clayton1')
+// app.post('/game', async (req, res, next) => {
+//   const player1 = await playerDao.getPlayerByUsername('clayton')
+//   const player2 = await playerDao.getPlayerByUsername('clayton1')
 
 
-  // const game = new Game([])
+//   // const game = new Game([])
 
-  // gameDao.createGame(game.rep(), [player1!, player2!]).then(() => {
-  //   res.send('game created')
-  // })
+//   // gameDao.createGame(game.rep(), [player1!, player2!]).then(() => {
+//   //   res.send('game created')
+//   // })
 
-  gameService.startGame([player1!, player2!]).then(id => {
-    res.status(200).send(id)
-  }).catch(next)
-})
+//   gameService.startGame([player1!, player2!]).then(id => {
+//     res.status(200).send(id)
+//   }).catch(next)
+// })
 
 app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
-
+  // TODO - implement endpoint for UI to check if authenticated
 })
 
 app.get('/game/:gameId', authenticated, (req: Request<MoveParams, {}, {}>, res: Response, next: NextFunction) => {
@@ -135,6 +136,12 @@ app.get('/record', authenticated, (req, res) => {
 
 app.use(handleErrors)
 
+cron.schedule('* * * * *', () => {
+  console.log('checking for expired games')
+  gameService.forfeitExpiredGames()
+})
+
+// gameService.forfeitExpiredGames()
 
 app.listen(8000, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:8000`);

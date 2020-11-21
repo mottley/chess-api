@@ -3,6 +3,7 @@ import { GameDbo } from './dbo/game.dbo';
 import { Player } from '../model/player';
 import { GameStatus, Color } from '../model/enum';
 import { PlayerDao } from './player.dao';
+import { Op } from 'sequelize';
 
 
 
@@ -45,8 +46,11 @@ export class GameDao {
     }, { where: { id: game.id } })
   }
 
-  async getGamesByStatus(status: GameStatus): Promise<Game[]> {
-    const games: GameDbo[] = await GameDbo.findAll({ where: { status: status }, include: { all: true } })
+  async getGamesByStatus(statuses: GameStatus[]): Promise<Game[]> {
+    const games: GameDbo[] = await GameDbo.findAll({
+      where: { status: { [Op.in]: statuses } },
+      include: { all: true }
+    })
     return games.map(g => GameDao.convert(g))
   }
 
