@@ -6,7 +6,6 @@ export enum Color {
 }
 
 export enum GameStatus {
-  Pending = 'pending',
   InProgress = 'in progress',
   Check = 'check',
   Completed = 'completed'
@@ -24,4 +23,10 @@ export enum GameRecord {
   Win = 'win',
   Draw = 'draw',
   Loss = 'loss'
+}
+
+export enum RoomStatus {
+  Pending = 'pending',
+  InProgress = 'in progress',
+  Closed = 'closed'
 }

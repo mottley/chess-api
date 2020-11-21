@@ -26,8 +26,9 @@ export class AuthenticationService {
     }
 
     const hashedPassword: string = await bcrypt.hash(plaintextPassword, SALT_ROUNDS)
+    const newPlayer: Player = await this.dao.createPlayer(username, hashedPassword)
 
-    return this.dao.createPlayer(username, hashedPassword)
+    return this.createResponse(newPlayer)
   }
 
   async login(req: Request<{}, {}, SignUpRequest>): Promise<PlayerResponse> {

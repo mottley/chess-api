@@ -27,11 +27,11 @@ const authService = new AuthenticationService(playerDao);
 
 const gameDao = new GameDao();
 const moveDao = new MoveDao();
-const gameService = new GameService(gameDao, moveDao);
+const roomDao = new RoomDao();
+const gameService = new GameService(gameDao, moveDao, roomDao);
 
 const historyService = new HistoryService(gameDao, moveDao, playerDao);
 
-const roomDao = new RoomDao();
 const roomService = new RoomService(roomDao, gameService);
 
 const sessionStore = getSequelizeStore();
@@ -50,14 +50,14 @@ app.use(session({
 app.get('/', (req, res) => res.send('Express + TypeScript Server'));
 
 app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
-  // console.log('Request body: ', req.body)
-  authService.signUp(req.body.username, req.body.password).then(() => {
+  authService.signUp(req.body.username, req.body.password).then(r => {
+    // Set player id in session
+    req.session.playerId = r.id
     res.status(204).end()
   }).catch(next)
 })
 
 app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
-  // console.log('Request body: ', req.body)
   authService.login(req).then(r => {
     // Set player id in session
     req.session.playerId = r.id
@@ -71,8 +71,14 @@ app.post('/room', authenticated, (req: Request<{}, {}, RoomRequest>, res: Respon
   }).catch(next)
 })
 
-app.post('/room/:roomId', authenticated, (req: Request, res: Response, next: NextFunction) => {
-  roomService.joinRoom(res.locals.player, req.params.roomId).then(() => {
+app.get('/room', authenticated, (req: Request<{}, {}, RoomRequest>, res: Response, next: NextFunction) => {
+  roomService.getRooms().then(rs => {
+    res.status(200).send(rs)
+  }).catch(next)
+})
+
+app.post('/room/:roomName', authenticated, (req: Request, res: Response, next: NextFunction) => {
+  roomService.joinRoom(res.locals.player, req.params.roomName).then(() => {
     res.status(200).end()
   }).catch(next)
 })
@@ -128,6 +134,7 @@ app.get('/record', authenticated, (req, res) => {
 
 
 app.use(handleErrors)
+
 
 app.listen(8000, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:8000`);

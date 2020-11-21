@@ -6,12 +6,13 @@ import { Color, GameStatus } from '../model/enum';
 import { MoveDao } from '../dao/move.dao';
 import crypto from 'crypto';
 import { GameResponse } from './response/game.response';
+import { RoomDao } from '../dao/room.dao';
 
 export class GameService {
 
   private TURN_TIMER = 60;
 
-  constructor(private dao: GameDao, private mdao: MoveDao) { }
+  constructor(private dao: GameDao, private mdao: MoveDao, private rdao: RoomDao) { }
 
   async startGame(players: Player[]): Promise<GameResponse> {
 

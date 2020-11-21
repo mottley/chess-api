@@ -7,14 +7,13 @@ export class PlayerDao {
     PlayerDbo.sync()
   }
 
-  async createPlayer(username: string, hashedPassword: string): Promise<void> {
-    return PlayerDbo.create({
+  async createPlayer(username: string, hashedPassword: string): Promise<Player> {
+    const player: PlayerDbo = await PlayerDbo.create({
       username,
       password: hashedPassword
     })
-      .then(p => {
-        return
-      })
+
+    return PlayerDao.convert(player)
   }
 
   async getPlayerById(id: string): Promise<Player | undefined> {
