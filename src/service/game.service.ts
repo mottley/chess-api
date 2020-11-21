@@ -2,12 +2,13 @@ import { InvalidMoveError, UnauthorizedMoveError, DuplicatePlayerError } from '.
 import { GameDao } from '../dao/game.dao';
 import { Game } from '../model/game';
 import { Player } from '../model/player';
-import { Color, GameStatus } from '../model/enum';
+import { Color, GameStatus, RoomStatus } from '../model/enum';
 import { MoveDao } from '../dao/move.dao';
 import crypto from 'crypto';
 import { GameResponse } from './response/game.response';
 import { RoomDao } from '../dao/room.dao';
 import { Move } from '../model/move';
+import { Room } from '../model/room';
 
 export class GameService {
 
@@ -96,10 +97,13 @@ export class GameService {
 
     // Record move history
     await this.mdao.storeMove(move, game, authenticatedPlayer)
-
     const moves: Move[] = await this.mdao.getMovesByGameId(game.id)
 
-    // TODO - close rooms in room service
+    if (game.isGameOver()) {
+      const room: Room = (await this.rdao.getRoomsForGames([game.id]))[0]
+      room.status = RoomStatus.Closed
+      await this.rdao.storeRoom(room)
+    }
 
     return this.createResponse(game, moves)
   }
@@ -118,10 +122,15 @@ export class GameService {
       .filter(ge => ge.end < currentTime)
       .map(ge => ge.game)
 
+    // Expire games and store
     expiredGames.forEach(g => g.expireGame())
     expiredGames.forEach(async g => await this.dao.storeGame(g))
 
-    // TODO - close rooms in room service
+    // Close rooms
+    const gameIds: string[] = expiredGames.map(g => g.id)
+    const rooms: Room[] = await this.rdao.getRoomsForGames(gameIds)
+    rooms.forEach(r => r.status = RoomStatus.Closed)
+    rooms.forEach(async r => await this.rdao.storeRoom(r))
   }
 
   private createResponse(game: Game, moves: Move[]): GameResponse {

@@ -42,13 +42,20 @@ export class RoomDao {
   //   return rooms.map(r => RoomDao.convert(r))
   // }
 
+  async getRoomsForGames(gameIds: string[]): Promise<Room[]> {
+    const rooms: RoomDbo[] = await RoomDbo.findAll({
+      where: { gameId: { [Op.in]: gameIds } },
+      include: [{ association: 'players' }]
+    })
+
+    return rooms.map(r => RoomDao.convert(r))
+  }
+
   async getRoomsByStatus(statuses: RoomStatus[]): Promise<Room[]> {
     const rooms: RoomDbo[] = await RoomDbo.findAll({
       where: { status: { [Op.in]: statuses } },
       include: [{ association: 'players' }]
     })
-
-    console.log(rooms)
 
     return rooms.map(r => RoomDao.convert(r))
   }

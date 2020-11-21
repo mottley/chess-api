@@ -63,6 +63,8 @@ export class RoomService {
     return activeRooms.map(r => this.createResponse(r))
   }
 
+  // TODO - add functionality to leave a room?
+
   private createResponse(room: Room): RoomResponse {
     return {
       id: room.id,

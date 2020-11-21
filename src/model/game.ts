@@ -40,6 +40,10 @@ export class Game {
     return this.chess.moves().includes(move)
   }
 
+  isGameOver(): boolean {
+    return this.status === GameStatus.Completed
+  }
+
   board(): string {
     return this.chess.fen()
   }
