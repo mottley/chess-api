@@ -2,8 +2,8 @@ import { MoveDbo } from './dbo/move.dbo';
 import { Move } from '../model/move';
 import { Game } from '../model/game';
 import { Player } from '../model/player';
-import { GameDao } from './game.dao';
 import { PlayerDao } from './player.dao';
+import { Op } from 'sequelize';
 
 
 export class MoveDao {
@@ -22,6 +22,15 @@ export class MoveDao {
   async getMovesByGameId(gameId: string): Promise<Move[]> {
     const moves: MoveDbo[] = await MoveDbo.findAll({
       where: { gameId: gameId },
+      include: ['game', 'player']
+    })
+
+    return moves.map(m => MoveDao.convert(m))
+  }
+
+  async getMovesForGameIds(gameIds: string[]): Promise<Move[]> {
+    const moves: MoveDbo[] = await MoveDbo.findAll({
+      where: { gameId: { [Op.in]: gameIds } },
       include: ['game', 'player']
     })
 

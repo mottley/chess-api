@@ -38,7 +38,7 @@ const roomService = new RoomService(roomDao, gameService);
 const sessionStore = getSequelizeStore();
 
 const app = express();
-app.use(cors({ credentials: true }))
+app.use(cors({ credentials: true })) // TODO - remove for production
 app.use(bodyParser.json())
 app.use(session({
   secret: 'test-secret',
@@ -84,22 +84,6 @@ app.post('/room/:roomName', authenticated, (req: Request, res: Response, next: N
   }).catch(next)
 })
 
-// app.post('/game', async (req, res, next) => {
-//   const player1 = await playerDao.getPlayerByUsername('clayton')
-//   const player2 = await playerDao.getPlayerByUsername('clayton1')
-
-
-//   // const game = new Game([])
-
-//   // gameDao.createGame(game.rep(), [player1!, player2!]).then(() => {
-//   //   res.send('game created')
-//   // })
-
-//   gameService.startGame([player1!, player2!]).then(id => {
-//     res.status(200).send(id)
-//   }).catch(next)
-// })
-
 app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
   // TODO - implement endpoint for UI to check if authenticated
 })
@@ -116,23 +100,17 @@ app.post('/game/:gameId/move', authenticated, validateMove, (req: Request<MovePa
   }).catch(next)
 })
 
-app.get('/game/:gameId/move', authenticated, (req: Request<MoveParams>, res: Response, next: NextFunction) => {
-  historyService.getGameMoves(res.locals.player, req.params.gameId).then(moves => {
-    res.status(200).send(moves)
+app.get('/leaderboard', authenticated, (req, res, next) => {
+  historyService.getLeaderboard().then(r => {
+    res.status(200).send(r)
   }).catch(next)
 })
 
-app.get('/session', authenticated, (req, res) => {
-  console.log(res.locals.player)
-  res.send(req.session.playerId)
+app.get('/history', authenticated, (req, res, next) => {
+  historyService.getGameHistory().then(r => {
+    res.status(200).send(r)
+  }).catch(next)
 })
-
-app.get('/record', authenticated, (req, res) => {
-  historyService.getPlayerRecords().then(r => {
-    res.send(200)
-  })
-})
-
 
 app.use(handleErrors)
 

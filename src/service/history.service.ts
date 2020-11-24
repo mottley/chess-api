@@ -4,36 +4,25 @@ import { Move } from '../model/move';
 import { Game } from '../model/game';
 import { UnauthorizedError } from '../error';
 import { Player } from '../model/player';
-import { GameStatus, GameRecord, GameResult } from '../model/enum';
+import { GameStatus, GameResult, Color } from '../model/enum';
 import { PlayerDao } from '../dao/player.dao';
 import { Record } from '../model/record';
+import { HistoryResponse } from './response/history.response';
+import { LeaderboardResponse } from './response/leaderboard.response';
 
 interface PlayerRecordMapping {
   [key: string]: Record
+}
+
+interface GameMoveListMapping {
+  [gameId: string]: Move[]
 }
 
 export class HistoryService {
 
   constructor(private gdao: GameDao, private mdao: MoveDao, private pdao: PlayerDao) { }
 
-  async getGameMoves(authenticatedPlayer: Player, gameId: string): Promise<Move[]> {
-    const game: Game | undefined = await this.gdao.getGame(gameId)
-
-    // If in progress - only players in game can view, if completed - everyone can view
-    const allowedToView: boolean = game !== undefined && (game.status === GameStatus.Completed
-      || (game.status === GameStatus.InProgress && (game.white.id === authenticatedPlayer.id || game.black.id === authenticatedPlayer.id)))
-
-    if (!allowedToView) {
-      throw new UnauthorizedError(`Not authorized to view moves for game: ${gameId}`)
-    }
-
-    const moves: Move[] = await this.mdao.getMovesByGameId(gameId)
-
-    // TODO - implement response object(s)
-    return moves
-  }
-
-  async getPlayerRecords() {
+  async getLeaderboard(): Promise<LeaderboardResponse[]> {
     const allPlayers: Player[] = await this.pdao.getAllPlayers()
     const completedGames: Game[] = await this.gdao.getGamesByStatus([GameStatus.Completed])
 
@@ -43,7 +32,7 @@ export class HistoryService {
     }, {} as PlayerRecordMapping)
 
     for (let game of completedGames) {
-      if (game.result === GameResult.Checkmate) {
+      if (game.result === GameResult.Checkmate || game.result === GameResult.Forfeit) {
         playerRecordMapping[game.winner!.id].wins++
 
         // Determine loser
@@ -58,6 +47,62 @@ export class HistoryService {
       }
     }
 
-    console.log(playerRecordMapping)
+    return this.createLeaderboardResponse(allPlayers, playerRecordMapping)
+  }
+
+  async getGameHistory(): Promise<HistoryResponse[]> {
+    const completedGames: Game[] = await this.gdao.getGamesByStatus([GameStatus.Completed])
+
+    const gameIds: string[] = completedGames.map(g => g.id)
+
+    const moves: Move[] = await this.mdao.getMovesForGameIds(gameIds)
+
+    // Create game > move mappings
+    const gameMoveMapping = gameIds.reduce((map, gameId) => {
+      const gameMoves = moves.filter(m => m.gameId === gameId)
+      map[gameId] = gameMoves
+      return map
+    }, {} as GameMoveListMapping)
+
+    return completedGames.map(g => this.createHistoryResponse(g, gameMoveMapping[g.id]))
+  }
+
+  private createHistoryResponse(game: Game, moves: Move[]): HistoryResponse {
+    const playerColorLookup = {
+      [game.white.id]: Color.White,
+      [game.black.id]: Color.Black
+    }
+
+    return {
+      gameId: game.id,
+      winner: game.winner ? game.winner.username : undefined,
+      result: game.result!,
+      players: {
+        white: game.white.username,
+        black: game.black.username
+      },
+      finalBoard: game.board(),
+      moves: moves.map(m => ({
+        move: m.move,
+        username: m.player.username,
+        color: playerColorLookup[m.player.id],
+        time: m.timestamp
+      }))
+    }
+  }
+
+  private createLeaderboardResponse(allPlayers: Player[], playerRecords: PlayerRecordMapping): LeaderboardResponse[] {
+    // Determine each player's rank
+    const scoredPlayers = allPlayers.map(p => ({ player: p, score: playerRecords[p.id].wins + 0.5 * playerRecords[p.id].draws }))
+    const sortedScores = scoredPlayers.sort((a, b) => a.score - b.score)
+    const rankedPlayers: Player[] = sortedScores.map(sp => sp.player)
+
+    return rankedPlayers.map((p, idx) => ({
+      username: p.username,
+      rank: idx + 1,
+      wins: playerRecords[p.id].wins,
+      draws: playerRecords[p.id].draws,
+      losses: playerRecords[p.id].losses
+    }))
   }
 }
