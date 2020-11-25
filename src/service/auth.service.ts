@@ -28,10 +28,10 @@ export class AuthenticationService {
     const hashedPassword: string = await bcrypt.hash(plaintextPassword, SALT_ROUNDS)
     const newPlayer: Player = await this.dao.createPlayer(username, hashedPassword)
 
-    return this.createResponse(newPlayer)
+    return { id: newPlayer.id, response: this.createResponse(newPlayer) }
   }
 
-  async login(req: Request<{}, {}, SignUpRequest>): Promise<PlayerResponse> {
+  async login(req: Request<{}, {}, SignUpRequest>) {
     const username = req.body.username
     const plaintextPassword = req.body.password
 
@@ -54,7 +54,7 @@ export class AuthenticationService {
       await this.regenerateSession(req)
     }
 
-    return this.createResponse(player)
+    return { id: player.id, response: this.createResponse(player) }
   }
 
   async getPlayer(authenticatedPlayer: Player) {
@@ -92,7 +92,6 @@ export class AuthenticationService {
 
   private createResponse(player: Player): PlayerResponse {
     return {
-      id: player.id,
       username: player.username
     }
   }

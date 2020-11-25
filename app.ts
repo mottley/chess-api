@@ -60,7 +60,7 @@ app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: Ne
   authService.login(req).then(r => {
     // Set player id in session
     req.session.playerId = r.id
-    res.status(200).send(r)
+    res.status(200).send(r.response)
   }).catch(next)
 })
 
