@@ -12,7 +12,7 @@ import { Room } from '../model/room';
 
 export class GameService {
 
-  private TURN_TIMER = 90;
+  private TURN_TIMER = 300;
 
   constructor(private dao: GameDao, private mdao: MoveDao, private rdao: RoomDao) { }
 
@@ -93,19 +93,19 @@ export class GameService {
     game.makeMove(move)
 
     // Record game state
-    await this.dao.storeGame(game)
+    const updatedGame: Game = await this.dao.storeGame(game)
 
     // Record move history
     await this.mdao.storeMove(move, game, authenticatedPlayer)
-    const moves: Move[] = await this.mdao.getMovesByGameId(game.id)
+    const moves: Move[] = await this.mdao.getMovesByGameId(updatedGame.id)
 
-    if (game.isGameOver()) {
-      const room: Room = (await this.rdao.getRoomsForGames([game.id]))[0]
+    if (updatedGame.isGameOver()) {
+      const room: Room = (await this.rdao.getRoomsForGames([updatedGame.id]))[0]
       room.status = RoomStatus.Closed
       await this.rdao.storeRoom(room)
     }
 
-    return this.createResponse(game, moves)
+    return this.createResponse(updatedGame, moves)
   }
 
   async forfeitExpiredGames(): Promise<void> {

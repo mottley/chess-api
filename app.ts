@@ -5,19 +5,15 @@ import { PlayerDao } from './src/dao/player.dao';
 import { GameService } from './src/service/game.service';
 import { GameDao } from './src/dao/game.dao';
 import bodyParser from 'body-parser';
-import { PlayerDbo } from './src/dao/dbo/player.dbo';
-import { Game } from './src/model/game';
-import { GameDbo } from './src/dao/dbo/game.dbo';
 import { MoveRequest, MoveParams } from './src/service/request/move.request';
-import { validateMove } from './src/validator';
+import { validateMove, validateCreateRoom, validateJoinRoom } from './src/validator';
 import session from 'express-session';
 import { getSequelizeStore } from './src/session.store';
 import { authenticated } from './src/authenticator';
 import { handleErrors } from './src/error';
 import { MoveDao } from './src/dao/move.dao';
-import { sequelizeConnection } from './src/dao/connection';
 import { HistoryService } from './src/service/history.service';
-import { RoomRequest } from './src/service/request/room.request';
+import { RoomRequest, RoomParams } from './src/service/request/room.request';
 import { RoomService } from './src/service/room.service';
 import { RoomDao } from './src/dao/room.dao';
 import cors from 'cors';
@@ -41,14 +37,16 @@ const app = express();
 app.use(cors({ credentials: true })) // TODO - remove for production
 app.use(bodyParser.json())
 app.use(session({
-  secret: 'test-secret',
+  secret: 'test-secret', // TODO - pull secret from environment variable here
   store: sessionStore,
   resave: false,
-  // cookie: { secure: true } TODO - for prod
+  cookie: { secure: process.env.NODE_ENV === 'production' },
   saveUninitialized: false
 }))
 
-app.get('/', (req, res) => res.send('Express + TypeScript Server'));
+app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
+  // TODO - implement endpoint for UI to check if authenticated
+})
 
 app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
   authService.signUp(req.body.username, req.body.password).then(r => {
@@ -66,8 +64,8 @@ app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: Ne
   }).catch(next)
 })
 
-app.post('/room', authenticated, (req: Request<{}, {}, RoomRequest>, res: Response, next: NextFunction) => {
-  roomService.createRoom(res.locals.player, req.body.name).then(() => {
+app.post('/room', authenticated, validateCreateRoom, (req: Request<{}, {}, RoomRequest>, res: Response, next: NextFunction) => {
+  roomService.createRoom(res.locals.player, req.body.roomName).then(() => {
     res.status(200).end()
   }).catch(next)
 })
@@ -78,14 +76,10 @@ app.get('/room', authenticated, (req: Request<{}, {}, RoomRequest>, res: Respons
   }).catch(next)
 })
 
-app.post('/room/:roomName', authenticated, (req: Request, res: Response, next: NextFunction) => {
+app.post('/room/:roomName', authenticated, validateJoinRoom, (req: Request<RoomParams, {}, {}>, res: Response, next: NextFunction) => {
   roomService.joinRoom(res.locals.player, req.params.roomName).then(() => {
     res.status(200).end()
   }).catch(next)
-})
-
-app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
-  // TODO - implement endpoint for UI to check if authenticated
 })
 
 app.get('/game/:gameId', authenticated, (req: Request<MoveParams, {}, {}>, res: Response, next: NextFunction) => {

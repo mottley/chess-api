@@ -36,7 +36,7 @@ export class GameDao {
     return GameDao.convert(game)
   }
 
-  async storeGame(game: Game) {
+  async storeGame(game: Game): Promise<Game> {
     await GameDbo.update({
       board: game.board(),
       turn: game.turn,
@@ -44,6 +44,9 @@ export class GameDao {
       result: game.result,
       winnerId: game.winner ? game.winner.id : undefined
     }, { where: { id: game.id } })
+
+    const updatedGame: Game = (await this.getGame(game.id))!
+    return updatedGame
   }
 
   async getGamesByStatus(statuses: GameStatus[]): Promise<Game[]> {
