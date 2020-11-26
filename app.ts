@@ -40,7 +40,11 @@ app.use(session({
   secret: 'test-secret', // TODO - pull secret from environment variable here
   store: sessionStore,
   resave: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' },
+  rolling: true,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 30 * 60 * 1000 // 30 minutes
+  },
   saveUninitialized: false
 }))
 
