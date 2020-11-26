@@ -19,6 +19,7 @@ import { RoomDao } from './src/dao/room.dao';
 import cors from 'cors';
 import cron from 'node-cron';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 const isProduction: boolean = process.env.NODE_ENV === 'production'
 
@@ -56,6 +57,13 @@ app.use(session({
   saveUninitialized: false,
   name: 'id'
 }))
+
+// Rate limit 500 requests within 15 minutes per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 500
+})
+app.use(limiter)
 
 app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
   // TODO - implement endpoint for UI to check if authenticated
