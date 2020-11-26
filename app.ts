@@ -53,7 +53,8 @@ app.use(session({
     secure: isProduction,
     maxAge: 30 * 60 * 1000 // 30 minutes
   },
-  saveUninitialized: false
+  saveUninitialized: false,
+  name: 'id'
 }))
 
 app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
