@@ -18,6 +18,9 @@ import { RoomService } from './src/service/room.service';
 import { RoomDao } from './src/dao/room.dao';
 import cors from 'cors';
 import cron from 'node-cron';
+import helmet from 'helmet';
+
+const isProduction: boolean = process.env.NODE_ENV === 'production'
 
 const playerDao = new PlayerDao();
 const authService = new AuthenticationService(playerDao);
@@ -34,7 +37,12 @@ const roomService = new RoomService(roomDao, gameService);
 const sessionStore = getSequelizeStore();
 
 const app = express();
-app.use(cors({ credentials: true })) // TODO - remove for production
+
+if (!isProduction) {
+  app.use(cors({ credentials: true }))
+}
+
+app.use(helmet())
 app.use(bodyParser.json())
 app.use(session({
   secret: 'test-secret', // TODO - pull secret from environment variable here
@@ -42,7 +50,7 @@ app.use(session({
   resave: false,
   rolling: true,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction,
     maxAge: 30 * 60 * 1000 // 30 minutes
   },
   saveUninitialized: false
