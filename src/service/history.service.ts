@@ -94,7 +94,8 @@ export class HistoryService {
   private createLeaderboardResponse(allPlayers: Player[], playerRecords: PlayerRecordMapping): LeaderboardResponse[] {
     // Determine each player's rank
     const scoredPlayers = allPlayers.map(p => ({ player: p, score: playerRecords[p.id].wins + 0.5 * playerRecords[p.id].draws }))
-    const sortedScores = scoredPlayers.sort((a, b) => a.score - b.score)
+    // Sort descending order
+    const sortedScores = scoredPlayers.sort((a, b) => b.score - a.score)
     const rankedPlayers: Player[] = sortedScores.map(sp => sp.player)
 
     return rankedPlayers.map((p, idx) => ({

@@ -20,11 +20,13 @@ import cors from 'cors';
 import cron from 'node-cron';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { SessionDao } from './src/dao/session.dao';
 
 const isProduction: boolean = process.env.NODE_ENV === 'production'
 
 const playerDao = new PlayerDao();
-const authService = new AuthenticationService(playerDao);
+const sessionDao = new SessionDao();
+const authService = new AuthenticationService(playerDao, sessionDao);
 
 const gameDao = new GameDao();
 const moveDao = new MoveDao();
@@ -82,6 +84,12 @@ app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: Ne
     // Set player id in session
     req.session.playerId = r.id
     res.status(200).send(r.response)
+  }).catch(next)
+})
+
+app.post('/logout', (req: Request, res: Response, next: NextFunction) => {
+  authService.logout(req).then(() => {
+    res.status(204).end()
   }).catch(next)
 })
 

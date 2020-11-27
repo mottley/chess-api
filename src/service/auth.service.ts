@@ -4,15 +4,15 @@ import { Player } from '../model/player';
 import { InvalidUsernameError, InsecurePasswordError, InvalidCredentialsError, UnauthorizedError } from '../error';
 import zxcvbn from 'zxcvbn';
 import { Request } from 'express';
-import { SessionDbo } from '../dao/dbo/session.dbo';
 import { SignUpRequest } from './request/sign-up.request';
 import { PlayerResponse } from './response/player.response';
+import { SessionDao } from '../dao/session.dao';
 
 const SALT_ROUNDS = 10;
 
 export class AuthenticationService {
 
-  constructor(private dao: PlayerDao) { SessionDbo.sync() }
+  constructor(private dao: PlayerDao, private sdao: SessionDao) { }
 
   async signUp(username: string, plaintextPassword: string) {
     const player: Player | undefined = await this.dao.getPlayerByUsername(username)
@@ -47,7 +47,7 @@ export class AuthenticationService {
     }
 
     // Clear all active sessions for player
-    await SessionDbo.destroy({ where: { playerId: player.id } })
+    await this.sdao.deleteSessionsByPlayerId(player.id)
 
     // Forcibly re-generate if we already have an active session
     if (req.session.playerId !== undefined) {
@@ -61,17 +61,17 @@ export class AuthenticationService {
     return this.createResponse(authenticatedPlayer)
   }
 
-  // TODO - finish logout functionality
   async logout(req: Request): Promise<void> {
     const playerId: string | undefined = req.session.playerId
-    if (req.session.playerId === undefined) {
+
+    if (playerId === undefined) {
       return
     }
 
-    // req.session.destroy()
+    await this.destroySession(req)
 
     // Clear all active sessions for player
-    await SessionDbo.destroy({ where: { playerId: playerId } })
+    await this.sdao.deleteSessionsByPlayerId(playerId)
   }
 
   async authenticate(req: Request): Promise<Player> {
@@ -104,6 +104,17 @@ export class AuthenticationService {
   private regenerateSession(req: Request): Promise<void> {
     return new Promise((resolve, reject) => {
       req.session.regenerate((err: any) => {
+        if (err != null) {
+          reject(err)
+        }
+        resolve()
+      })
+    })
+  }
+
+  private destroySession(req: Request): Promise<void> {
+    return new Promise((resolve, reject) => {
+      req.session.destroy((err: any) => {
         if (err != null) {
           reject(err)
         }
