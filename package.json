@@ -8,7 +8,7 @@
   "private": false,
   "scripts": {
     "start": "nodemon --exec ts-node -T app.ts",
-    "build": "tsc --project ./",
+    "build": "tsc --project ./ --outDir build",
     "test": "ts-node example.chess.ts"
   },
   "dependencies": {

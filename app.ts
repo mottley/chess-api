@@ -21,6 +21,12 @@ import cron from 'node-cron';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { SessionDao } from './src/dao/session.dao';
+import https from 'https';
+import fs from 'fs';
+
+const key = fs.readFileSync('./.cert/localhost.key')
+const certificate = fs.readFileSync('./.cert/localhost.crt')
+const sslConfig = { key: key, cert: certificate }
 
 const isProduction: boolean = process.env.NODE_ENV === 'production'
 
@@ -142,6 +148,14 @@ cron.schedule('* * * * *', () => {
   gameService.forfeitExpiredGames()
 })
 
-app.listen(8000, () => {
-  console.log(`⚡️[server]: Server is running at https://localhost:8000`);
-});
+if (isProduction) {
+  const server = https.createServer(sslConfig, app)
+  server.listen(8443)
+}
+else {
+  app.listen(8000, () => {
+    console.log(`⚡️[server]: Server is running at https://localhost:8000`);
+  });
+}
+
+export default app;
