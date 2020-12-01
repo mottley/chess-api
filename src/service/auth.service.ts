@@ -7,8 +7,11 @@ import { Request } from 'express';
 import { PlayerResponse } from './response/player.response';
 import { SessionDao } from '../dao/session.dao';
 import { LoginRequest } from './request/login.request';
+import { RateLimitService } from './rate.service';
 
 const SALT_ROUNDS = 10;
+
+const rateLimitService = new RateLimitService();
 
 export class AuthenticationService {
 
@@ -35,14 +38,18 @@ export class AuthenticationService {
     const username = req.body.username
     const plaintextPassword = req.body.password
 
+    await rateLimitService.checkUsernameLoginLimited(username)
+
     const player: Player | undefined = await this.dao.getPlayerByUsername(username)
 
     if (player === undefined) {
+      await rateLimitService.addPointForUsername(username)
       throw new InvalidCredentialsError()
     }
 
     const passwordsMatch: boolean = await bcrypt.compare(plaintextPassword, player.password)
     if (!passwordsMatch) {
+      await rateLimitService.addPointForUsername(username)
       throw new InvalidCredentialsError()
     }
 
@@ -53,6 +60,8 @@ export class AuthenticationService {
     if (req.session.playerId !== undefined) {
       await this.regenerateSession(req)
     }
+
+    await rateLimitService.clearLimitForUsername(username)
 
     return { id: player.id, response: this.createResponse(player) }
   }

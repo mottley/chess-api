@@ -11,7 +11,8 @@ export enum HttpResponseCode {
   Unauthorized = 401,
   Forbidden = 403,
   NotFound = 404,
-  InternalServerError = 500
+  InternalServerError = 500,
+  RateLimited = 429
 }
 
 export class HttpError extends Error {
@@ -45,6 +46,12 @@ export class ForbiddenError extends HttpError {
   }
 }
 
+export class RateLimitedError extends HttpError {
+  constructor(message = 'Too Many Requests') {
+    super(message, HttpResponseCode.RateLimited);
+  }
+}
+
 export class InvalidMoveError extends BadRequestError { }
 
 export class UnauthorizedMoveError extends ForbiddenError { }
@@ -53,13 +60,12 @@ export class InvalidUsernameError extends BadRequestError { }
 
 export class InsecurePasswordError extends BadRequestError { }
 
-export class InvalidCredentialsError extends UnauthorizedError { }
+export class InvalidCredentialsError extends BadRequestError { }
 
 export class RoomNotFoundError extends NotFoundError { }
 
 export class DuplicatePlayerError extends BadRequestError { }
 
 export const handleErrors = (err: HttpError, req: Request, res: Response, next: NextFunction) => {
-  // TODO - handle errors not http errors so that stack trace isn't returned
   next(err)
 }

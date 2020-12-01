@@ -16,9 +16,8 @@ import { RoomRequest, RoomParams } from './src/service/request/room.request';
 import { RoomService } from './src/service/room.service';
 import { RoomDao } from './src/dao/room.dao';
 import cors from 'cors';
-import cron, { validate } from 'node-cron';
+import cron from 'node-cron';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import { SessionDao } from './src/dao/session.dao';
 import https from 'https';
 import fs from 'fs';
@@ -65,13 +64,6 @@ app.use(session({
   saveUninitialized: false,
   name: 'id'
 }))
-
-// Rate limit 500 requests within 15 minutes per IP
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 500
-})
-app.use(limiter)
 
 app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
   // TODO - implement endpoint for UI to check if authenticated
