@@ -1,12 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { SignUpRequest } from './src/service/request/sign-up.request';
 import { AuthenticationService } from './src/service/auth.service';
 import { PlayerDao } from './src/dao/player.dao';
 import { GameService } from './src/service/game.service';
 import { GameDao } from './src/dao/game.dao';
 import bodyParser from 'body-parser';
 import { MoveRequest, MoveParams } from './src/service/request/move.request';
-import { validateMove, validateCreateRoom, validateJoinRoom } from './src/validator';
+import { validateMove, validateCreateRoom, validateJoinRoom, validateLoginOrRegistration, validateGetGame } from './src/validator';
 import session from 'express-session';
 import { getSequelizeStore } from './src/session.store';
 import { authenticated } from './src/authenticator';
@@ -17,12 +16,13 @@ import { RoomRequest, RoomParams } from './src/service/request/room.request';
 import { RoomService } from './src/service/room.service';
 import { RoomDao } from './src/dao/room.dao';
 import cors from 'cors';
-import cron from 'node-cron';
+import cron, { validate } from 'node-cron';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { SessionDao } from './src/dao/session.dao';
 import https from 'https';
 import fs from 'fs';
+import { RegisterRequest, LoginRequest } from './src/service/request/login.request';
 
 const key = fs.readFileSync('./.cert/localhost.key')
 const certificate = fs.readFileSync('./.cert/localhost.crt')
@@ -77,7 +77,7 @@ app.get('/player', authenticated, (req: Request, res: Response, next: NextFuncti
   // TODO - implement endpoint for UI to check if authenticated
 })
 
-app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
+app.post('/register', validateLoginOrRegistration, (req: Request<{}, {}, RegisterRequest>, res: Response, next: NextFunction) => {
   authService.signUp(req.body.username, req.body.password).then(r => {
     // Set player id in session
     req.session.playerId = r.id
@@ -85,7 +85,7 @@ app.post('/register', (req: Request<{}, {}, SignUpRequest>, res: Response, next:
   }).catch(next)
 })
 
-app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: NextFunction) => {
+app.post('/login', validateLoginOrRegistration, (req: Request<{}, {}, LoginRequest>, res: Response, next: NextFunction) => {
   authService.login(req).then(r => {
     // Set player id in session
     req.session.playerId = r.id
@@ -93,7 +93,7 @@ app.post('/login', (req: Request<{}, {}, SignUpRequest>, res: Response, next: Ne
   }).catch(next)
 })
 
-app.post('/logout', (req: Request, res: Response, next: NextFunction) => {
+app.post('/logout', authenticated, (req: Request, res: Response, next: NextFunction) => {
   authService.logout(req).then(() => {
     res.status(204).end()
   }).catch(next)
@@ -105,7 +105,7 @@ app.post('/room', authenticated, validateCreateRoom, (req: Request<{}, {}, RoomR
   }).catch(next)
 })
 
-app.get('/room', authenticated, (req: Request<{}, {}, RoomRequest>, res: Response, next: NextFunction) => {
+app.get('/room', authenticated, (req: Request<{}, {}, {}>, res: Response, next: NextFunction) => {
   roomService.getRooms().then(rs => {
     res.status(200).send(rs)
   }).catch(next)
@@ -117,7 +117,7 @@ app.post('/room/:roomName', authenticated, validateJoinRoom, (req: Request<RoomP
   }).catch(next)
 })
 
-app.get('/game/:gameId', authenticated, (req: Request<MoveParams, {}, {}>, res: Response, next: NextFunction) => {
+app.get('/game/:gameId', authenticated, validateGetGame, (req: Request<MoveParams, {}, {}>, res: Response, next: NextFunction) => {
   gameService.getGame(res.locals.player, req.params.gameId).then(g => {
     res.status(200).send(g)
   }).catch(next)

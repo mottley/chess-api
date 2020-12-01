@@ -4,9 +4,9 @@ import { Player } from '../model/player';
 import { InvalidUsernameError, InsecurePasswordError, InvalidCredentialsError, UnauthorizedError } from '../error';
 import zxcvbn from 'zxcvbn';
 import { Request } from 'express';
-import { SignUpRequest } from './request/sign-up.request';
 import { PlayerResponse } from './response/player.response';
 import { SessionDao } from '../dao/session.dao';
+import { LoginRequest } from './request/login.request';
 
 const SALT_ROUNDS = 10;
 
@@ -31,7 +31,7 @@ export class AuthenticationService {
     return { id: newPlayer.id, response: this.createResponse(newPlayer) }
   }
 
-  async login(req: Request<{}, {}, SignUpRequest>) {
+  async login(req: Request<{}, {}, LoginRequest>) {
     const username = req.body.username
     const plaintextPassword = req.body.password
 

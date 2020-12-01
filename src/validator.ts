@@ -3,6 +3,8 @@ import { MoveRequest, MoveParams, moveRequestSchema, moveParamsSchema } from './
 import Ajv from 'ajv';
 import { roomParamsSchema, RoomRequest, RoomParams } from './service/request/room.request';
 import { BadRequestError } from './error';
+import { accountSchema, LoginRequest, RegisterRequest } from './service/request/login.request';
+import { GameParams, gameSchema } from './service/request/game.request';
 
 const ajv = new Ajv();
 
@@ -13,6 +15,16 @@ export const validateMove = (req: Request<MoveParams, {}, MoveRequest>, res: Res
   if (!validateParams(req.params)) {
     return next(new BadRequestError(`Failed param validation: ${validateParams.errors}`))
   }
+
+  if (!validateBody(req.body)) {
+    return next(new BadRequestError(`Failed body validation: ${validateBody.errors}`))
+  }
+
+  return next()
+}
+
+export const validateLoginOrRegistration = (req: Request<{}, {}, LoginRequest | RegisterRequest>, res: Response, next: NextFunction) => {
+  const validateBody = ajv.compile(accountSchema);
 
   if (!validateBody(req.body)) {
     return next(new BadRequestError(`Failed body validation: ${validateBody.errors}`))
@@ -33,6 +45,16 @@ export const validateCreateRoom = (req: Request<{}, {}, RoomRequest>, res: Respo
 
 export const validateJoinRoom = (req: Request<RoomParams, {}, {}>, res: Response, next: NextFunction) => {
   const validateParams = ajv.compile(roomParamsSchema)
+
+  if (!validateParams(req.params)) {
+    return next(new BadRequestError(`Failed param validation: ${validateParams.errors}`))
+  }
+
+  return next()
+}
+
+export const validateGetGame = (req: Request<GameParams, {}, {}>, res: Response, next: NextFunction) => {
+  const validateParams = ajv.compile(gameSchema)
 
   if (!validateParams(req.params)) {
     return next(new BadRequestError(`Failed param validation: ${validateParams.errors}`))
