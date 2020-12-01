@@ -15,7 +15,8 @@ export const roomParamsSchema: JSONSchemaType<RoomParams | RoomRequest> = {
     roomName: {
       type: 'string',
       pattern: '^[A-Za-z0-9 ]+$',
-      maxLength: 30
+      minLength: 5,
+      maxLength: 15
     },
   },
   required: ['roomName'],

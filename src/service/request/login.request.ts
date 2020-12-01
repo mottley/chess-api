@@ -16,7 +16,8 @@ export const accountSchema: JSONSchemaType<LoginRequest | RegisterRequest> = {
     username: {
       type: 'string',
       pattern: '^[A-Za-z]+$',
-      maxLength: 10
+      minLength: 5,
+      maxLength: 15
     },
     password: {
       type: 'string',

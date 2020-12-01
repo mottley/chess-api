@@ -1,12 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { MoveRequest, MoveParams, moveRequestSchema, moveParamsSchema } from './service/request/move.request';
 import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
 import { roomParamsSchema, RoomRequest, RoomParams } from './service/request/room.request';
 import { BadRequestError } from './error';
 
 const ajv = new Ajv();
-addFormats(ajv);
 
 export const validateMove = (req: Request<MoveParams, {}, MoveRequest>, res: Response, next: NextFunction) => {
   const validateParams = ajv.compile(moveParamsSchema);
