@@ -4,9 +4,9 @@ import { Player } from '../model/player';
 import { InvalidUsernameError, InsecurePasswordError, InvalidCredentialsError, UnauthorizedError } from '../error';
 import zxcvbn from 'zxcvbn';
 import { Request } from 'express';
-import { PlayerResponse } from './response/player.response';
+import { PlayerResponse } from '../model/response/player.response';
 import { SessionDao } from '../dao/session.dao';
-import { LoginRequest } from './request/login.request';
+import { LoginRequest } from '../model/request/login.request';
 import { RateLimitService } from './rate.service';
 
 const SALT_ROUNDS = 10;

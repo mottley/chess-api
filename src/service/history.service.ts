@@ -7,8 +7,8 @@ import { Player } from '../model/player';
 import { GameStatus, GameResult, Color } from '../model/enum';
 import { PlayerDao } from '../dao/player.dao';
 import { Record } from '../model/record';
-import { HistoryResponse } from './response/history.response';
-import { LeaderboardResponse } from './response/leaderboard.response';
+import { HistoryResponse } from '../model/response/history.response';
+import { LeaderboardResponse } from '../model/response/leaderboard.response';
 
 interface PlayerRecordMapping {
   [key: string]: Record

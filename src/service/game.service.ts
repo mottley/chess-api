@@ -5,7 +5,7 @@ import { Player } from '../model/player';
 import { Color, GameStatus, RoomStatus } from '../model/enum';
 import { MoveDao } from '../dao/move.dao';
 import crypto from 'crypto';
-import { GameResponse } from './response/game.response';
+import { GameResponse } from '../model/response/game.response';
 import { RoomDao } from '../dao/room.dao';
 import { Move } from '../model/move';
 import { Room } from '../model/room';

@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { MoveRequest, MoveParams, moveRequestSchema, moveParamsSchema } from './service/request/move.request';
+import { MoveRequest, MoveParams, moveRequestSchema, moveParamsSchema } from './model/request/move.request';
 import Ajv from 'ajv';
-import { roomParamsSchema, RoomRequest, RoomParams } from './service/request/room.request';
+import { roomParamsSchema, RoomRequest, RoomParams } from './model/request/room.request';
 import { BadRequestError } from './error';
-import { accountSchema, LoginRequest, RegisterRequest } from './service/request/login.request';
-import { GameParams, gameSchema } from './service/request/game.request';
+import { accountSchema, LoginRequest, RegisterRequest } from './model/request/login.request';
+import { GameParams, gameSchema } from './model/request/game.request';
 
 const ajv = new Ajv();
 

@@ -3,9 +3,9 @@ import { Player } from '../model/player';
 import { Room } from '../model/room';
 import { GameService } from './game.service';
 import { RoomNotFoundError, BadRequestError } from '../error';
-import { RoomResponse } from './response/room.response';
+import { RoomResponse } from '../model/response/room.response';
 import { RoomStatus } from '../model/enum';
-import { GameResponse } from './response/game.response';
+import { GameResponse } from '../model/response/game.response';
 
 
 export class RoomService {

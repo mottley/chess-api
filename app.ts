@@ -4,7 +4,7 @@ import { PlayerDao } from './src/dao/player.dao';
 import { GameService } from './src/service/game.service';
 import { GameDao } from './src/dao/game.dao';
 import bodyParser from 'body-parser';
-import { MoveRequest, MoveParams } from './src/service/request/move.request';
+import { MoveRequest, MoveParams } from './src/model/request/move.request';
 import { validateMove, validateCreateRoom, validateJoinRoom, validateLoginOrRegistration, validateGetGame } from './src/validator';
 import session from 'express-session';
 import { getSequelizeStore } from './src/session.store';
@@ -12,7 +12,7 @@ import { authenticated } from './src/authenticator';
 import { handleErrors } from './src/error';
 import { MoveDao } from './src/dao/move.dao';
 import { HistoryService } from './src/service/history.service';
-import { RoomRequest, RoomParams } from './src/service/request/room.request';
+import { RoomRequest, RoomParams } from './src/model/request/room.request';
 import { RoomService } from './src/service/room.service';
 import { RoomDao } from './src/dao/room.dao';
 import cors from 'cors';
@@ -21,7 +21,7 @@ import helmet from 'helmet';
 import { SessionDao } from './src/dao/session.dao';
 import https from 'https';
 import fs from 'fs';
-import { RegisterRequest, LoginRequest } from './src/service/request/login.request';
+import { RegisterRequest, LoginRequest } from './src/model/request/login.request';
 
 const key = fs.readFileSync('./.cert/localhost.key')
 const certificate = fs.readFileSync('./.cert/localhost.crt')
@@ -51,7 +51,10 @@ if (!isProduction) {
 }
 
 app.use(helmet())
-app.use(bodyParser.json())
+app.use(bodyParser.json({
+  type: () => true // Attempt to parse all requests (throws error if not valid JSON)
+}))
+
 app.use(session({
   secret: 'test-secret', // TODO - pull secret from environment variable here
   store: sessionStore,
@@ -109,7 +112,7 @@ app.post('/room/:roomName', authenticated, validateJoinRoom, (req: Request<RoomP
   }).catch(next)
 })
 
-app.get('/game/:gameId', authenticated, validateGetGame, (req: Request<MoveParams, {}, {}>, res: Response, next: NextFunction) => {
+app.get('/game/:gameId', authenticated, (req: Request<MoveParams, {}, {}>, res: Response, next: NextFunction) => {
   gameService.getGame(res.locals.player, req.params.gameId).then(g => {
     res.status(200).send(g)
   }).catch(next)
@@ -127,6 +130,8 @@ app.get('/leaderboard', authenticated, (req, res, next) => {
   }).catch(next)
 })
 
+
+// TODO - update to /game/history?
 app.get('/history', authenticated, (req, res, next) => {
   historyService.getGameHistory().then(r => {
     res.status(200).send(r)
