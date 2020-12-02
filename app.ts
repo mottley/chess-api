@@ -22,6 +22,7 @@ import { SessionDao } from './src/dao/session.dao';
 import https from 'https';
 import fs from 'fs';
 import { RegisterRequest, LoginRequest } from './src/model/request/login.request';
+import { rateLimiter } from './src/limiter';
 
 const key = fs.readFileSync('./.cert/localhost.key')
 const certificate = fs.readFileSync('./.cert/localhost.crt')
@@ -67,6 +68,8 @@ app.use(session({
   saveUninitialized: false,
   name: 'id'
 }))
+
+app.use(rateLimiter)
 
 app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
   // TODO - implement endpoint for UI to check if authenticated
