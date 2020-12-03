@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, RequestParamHandler } from 'express';
 import { AuthenticationService } from './src/service/auth.service';
 import { PlayerDao } from './src/dao/player.dao';
 import { GameService } from './src/service/game.service';
@@ -23,6 +23,8 @@ import https from 'https';
 import fs from 'fs';
 import { RegisterRequest, LoginRequest } from './src/model/request/login.request';
 import { rateLimiter } from './src/limiter';
+import csurf from 'csurf';
+import cookieParser from 'cookie-parser';
 
 const key = fs.readFileSync('./.cert/localhost.key')
 const certificate = fs.readFileSync('./.cert/localhost.crt')
@@ -45,16 +47,20 @@ const roomService = new RoomService(roomDao, gameService);
 
 const sessionStore = getSequelizeStore();
 
+
 const app = express();
 
-if (!isProduction) {
-  app.use(cors({ credentials: true }))
-}
+// if (!isProduction) {
+app.use(cors({ credentials: true }))
+// }
 
 app.use(helmet())
+// app.use(bodyParser.urlencoded())
 app.use(bodyParser.json({
   type: () => true // Attempt to parse all requests (throws error if not valid JSON)
 }))
+
+const csrfProtection = csurf({ cookie: false })
 
 app.use(session({
   secret: 'test-secret', // TODO - pull secret from environment variable here
@@ -63,16 +69,19 @@ app.use(session({
   rolling: true,
   cookie: {
     secure: isProduction,
-    maxAge: 30 * 60 * 1000 // 30 minutes
+    maxAge: 30 * 60 * 1000, // 30 minutes
+    sameSite: true
   },
   saveUninitialized: false,
   name: 'id'
 }))
 
+app.use(cookieParser())
+// app.use(csrfProtection)
 app.use(rateLimiter)
 
-app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
-  // TODO - implement endpoint for UI to check if authenticated
+app.get('/csrf', csrfProtection, authenticated, (req: Request, res: Response, next: NextFunction) => {
+  res.status(200).send(req.csrfToken())
 })
 
 app.post('/register', validateLoginOrRegistration, (req: Request<{}, {}, RegisterRequest>, res: Response, next: NextFunction) => {
@@ -121,11 +130,12 @@ app.get('/game/:gameId', authenticated, (req: Request<MoveParams, {}, {}>, res: 
   }).catch(next)
 })
 
-app.post('/game/:gameId/move', authenticated, validateMove, (req: Request<MoveParams, {}, MoveRequest>, res: Response, next: NextFunction) => {
-  gameService.makeMove(res.locals.player, req.params.gameId, req.body.move).then(g => {
-    res.status(200).send(g)
-  }).catch(next)
-})
+app.post('/game/:gameId/move', authenticated, csrfProtection, validateMove,
+  (req: Request<MoveParams, {}, MoveRequest> & Request, res: Response, next: NextFunction) => {
+    gameService.makeMove(res.locals.player, req.params.gameId, req.body.move).then(g => {
+      res.status(200).send(g)
+    }).catch(next)
+  })
 
 app.get('/leaderboard', authenticated, (req, res, next) => {
   historyService.getLeaderboard().then(r => {
