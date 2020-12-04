@@ -1,0 +1,41 @@
+version: '3.7'
+services:
+  db:
+    image: mysql:5.6
+    restart: always
+    ports:
+      - target: 3306
+        published: 3306
+        protocol: tcp
+        mode: host
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+    volumes:
+      - db_data:/var/lib/mysql
+  ui:
+    build:
+      context: ../chess-ui
+    ports:
+      - target: 80
+        published: 3000
+        protocol: tcp
+        mode: host
+    depends_on:
+      - api
+  api:
+    build:
+      context: .
+    restart: always
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+volumes:
+  db_data: {}

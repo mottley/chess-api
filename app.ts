@@ -25,6 +25,7 @@ import { RegisterRequest, LoginRequest } from './src/model/request/login.request
 import { rateLimiter } from './src/limiter';
 import csurf from 'csurf';
 import cookieParser from 'cookie-parser';
+import { httpLogger } from './src/logger';
 
 const key = fs.readFileSync('./.cert/localhost.key')
 const certificate = fs.readFileSync('./.cert/localhost.crt')
@@ -55,7 +56,7 @@ app.use(cors({ credentials: true }))
 // }
 
 app.use(helmet())
-// app.use(bodyParser.urlencoded())
+app.use(httpLogger)
 app.use(bodyParser.json({
   type: () => true // Attempt to parse all requests (throws error if not valid JSON)
 }))

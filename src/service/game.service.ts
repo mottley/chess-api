@@ -9,6 +9,9 @@ import { GameResponse } from '../model/response/game.response';
 import { RoomDao } from '../dao/room.dao';
 import { Move } from '../model/move';
 import { Room } from '../model/room';
+import { logger } from '../logger';
+
+const log = logger('GameService')
 
 export class GameService {
 
@@ -43,6 +46,7 @@ export class GameService {
       (game.white.id === authenticatedPlayer.id || game.black.id === authenticatedPlayer.id)
 
     if (game === undefined || !playerInGame) {
+      log.info(`Player: ${authenticatedPlayer.username} was blocked attempting to view game: ${gameId}`)
       throw new UnauthorizedMoveError(`Player not allowed to view game: ${gameId}!`)
     }
 
@@ -59,11 +63,17 @@ export class GameService {
       (game.white.id === authenticatedPlayer.id || game.black.id === authenticatedPlayer.id)
 
     if (game === undefined || !playerInGame) {
+      log.info(
+        `Player: ${authenticatedPlayer.username} was blocked attempting to make a move on game: ${gameId}, Reason: player not in game`
+      )
       throw new UnauthorizedMoveError(`Player not allowed to act on game: ${gameId}!`)
     }
 
     // Check if game is still `in progress`
     if (game.status !== GameStatus.InProgress && game.status !== GameStatus.Check) {
+      log.info(
+        `Player: ${authenticatedPlayer.username} was blocked attempting to make a move on game: ${gameId}, Reason: game not in progress`
+      )
       throw new UnauthorizedMoveError(`Game: ${gameId} is not currently in progress!`)
     }
 
@@ -75,17 +85,26 @@ export class GameService {
     const isPlayersTurn: boolean = playerLookup[game.turn] === authenticatedPlayer.id
 
     if (!isPlayersTurn) {
+      log.info(
+        `Player: ${authenticatedPlayer.username} was blocked attempting to make a move on game: ${gameId}, Reason: not player's turn`
+      )
       throw new UnauthorizedMoveError('Not your turn!')
     }
 
     const endOfTurn: Date = this.calculateEndOfTurn(game.lastUpdate)
     const currentTime: Date = new Date();
     if (endOfTurn < currentTime) {
+      log.info(
+        `Player: ${authenticatedPlayer.username} was blocked attempting to make a move on game: ${gameId}, Reason: game is expired`
+      )
       throw new UnauthorizedMoveError('Game is expired!')
     }
 
     // Check if move is legal first
     if (!game.isMoveLegal(move)) {
+      log.info(
+        `Player: ${authenticatedPlayer.username} was blocked attempting to make a move on game: ${gameId}, Reason: move is not legal`
+      )
       throw new InvalidMoveError(`Move: ${move} is not legal!`)
     }
 

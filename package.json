@@ -7,13 +7,15 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "nodemon --exec ts-node -T app.ts",
+    "start": "node app.js",
+    "dev": "nodemon --exec ts-node -T app.ts",
     "build": "tsc --project ./ --outDir build",
     "test": "jest"
   },
   "dependencies": {
     "@types/cookie-parser": "^1.4.2",
     "@types/csurf": "^1.11.0",
+    "@types/morgan": "^1.9.2",
     "ajv": "^7.0.0-beta.3",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
@@ -26,10 +28,12 @@
     "express-rate-limit": "^5.2.3",
     "express-session": "^1.17.1",
     "helmet": "^4.2.0",
+    "morgan": "^1.10.0",
     "mysql2": "^2.2.5",
     "node-cron": "^2.0.3",
     "rate-limiter-flexible": "^2.1.13",
     "sequelize": "^6.3.5",
+    "winston": "^3.3.3",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {

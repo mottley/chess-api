@@ -1,6 +1,10 @@
 import { RateLimiterMySQL } from 'rate-limiter-flexible';
 import { sequelizeConnection } from '../dao/connection';
 import { RateLimitedError } from '../error';
+import { logger } from '../logger';
+
+
+const log = logger('RateLimitService')
 
 const MAX_CONSECUTIVE_FAILS_BY_USERNAME = 5;
 const MAX_REQUESTS_PER_MINUTE = 35;
@@ -28,6 +32,7 @@ export class RateLimitService {
     }
 
     if (limit.consumedPoints >= MAX_CONSECUTIVE_FAILS_BY_USERNAME) {
+      log.info(`Player: ${username} has execeeded the max login attempts - rate limiting...`)
       throw new RateLimitedError();
     }
   }
@@ -47,6 +52,7 @@ export class RateLimitService {
     const limit = await defaultLimiter.get(ip)
 
     if (limit !== null && limit.consumedPoints >= MAX_REQUESTS_PER_MINUTE) {
+      log.info(`IP: ${ip} has execeeded the max request attempts - rate limiting...`)
       throw new RateLimitedError();
     }
 
