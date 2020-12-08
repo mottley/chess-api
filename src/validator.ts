@@ -12,8 +12,6 @@ export const validateMove = (req: Request<MoveParams, {}, MoveRequest>, res: Res
   const validateParams = ajv.compile(moveParamsSchema);
   const validateBody = ajv.compile(moveRequestSchema);
 
-  console.log('validate move running')
-
   if (!validateParams(req.params)) {
     return next(new BadRequestError(`Failed param validation: ${validateParams.errors}`))
   }

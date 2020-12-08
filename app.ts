@@ -26,6 +26,7 @@ import { rateLimiter } from './src/limiter';
 import csurf from 'csurf';
 import cookieParser from 'cookie-parser';
 import { httpLogger } from './src/logger';
+import { CsrfResponse } from './src/model/response/csrf.response';
 
 const key = fs.readFileSync('./.cert/localhost.key')
 const certificate = fs.readFileSync('./.cert/localhost.crt')
@@ -52,7 +53,7 @@ const sessionStore = getSequelizeStore();
 const app = express();
 
 // if (!isProduction) {
-app.use(cors({ credentials: true }))
+// app.use(cors({ credentials: true }))
 // }
 
 app.use(helmet())
@@ -63,8 +64,11 @@ app.use(bodyParser.json({
 
 const csrfProtection = csurf({ cookie: false })
 
+const SESSION_COOKIE_NAME = 'id'
+const SESSION_COOKIE_SECRET = process.env.COOKIE_SECRET || ''
+
 app.use(session({
-  secret: 'test-secret', // TODO - pull secret from environment variable here
+  secret: SESSION_COOKIE_SECRET,
   store: sessionStore,
   resave: false,
   rolling: true,
@@ -74,22 +78,22 @@ app.use(session({
     sameSite: true
   },
   saveUninitialized: false,
-  name: 'id'
+  name: SESSION_COOKIE_NAME
 }))
 
 app.use(cookieParser())
-// app.use(csrfProtection)
 app.use(rateLimiter)
 
 app.get('/csrf', csrfProtection, authenticated, (req: Request, res: Response, next: NextFunction) => {
-  res.status(200).send(req.csrfToken())
+  const response: CsrfResponse = { token: req.csrfToken() }
+  res.status(200).send(response)
 })
 
 app.post('/register', validateLoginOrRegistration, (req: Request<{}, {}, RegisterRequest>, res: Response, next: NextFunction) => {
   authService.signUp(req.body.username, req.body.password).then(r => {
     // Set player id in session
     req.session.playerId = r.id
-    res.status(204).end()
+    res.status(204).send(r.response)
   }).catch(next)
 })
 
@@ -103,8 +107,15 @@ app.post('/login', validateLoginOrRegistration, (req: Request<{}, {}, LoginReque
 
 app.post('/logout', authenticated, (req: Request, res: Response, next: NextFunction) => {
   authService.logout(req).then(() => {
+    res.clearCookie(SESSION_COOKIE_NAME)
     res.status(204).end()
   }).catch(next)
+})
+
+app.get('/player', authenticated, (req: Request, res: Response, next: NextFunction) => {
+  authService.getPlayer(res.locals.player).then(r => {
+    res.status(200).send(r)
+  })
 })
 
 app.post('/room', authenticated, validateCreateRoom, (req: Request<{}, {}, RoomRequest>, res: Response, next: NextFunction) => {
