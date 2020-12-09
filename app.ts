@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction, RequestParamHandler } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { AuthenticationService } from './src/service/auth.service';
 import { PlayerDao } from './src/dao/player.dao';
 import { GameService } from './src/service/game.service';
@@ -15,7 +15,6 @@ import { HistoryService } from './src/service/history.service';
 import { RoomRequest, RoomParams } from './src/model/request/room.request';
 import { RoomService } from './src/service/room.service';
 import { RoomDao } from './src/dao/room.dao';
-import cors from 'cors';
 import cron from 'node-cron';
 import helmet from 'helmet';
 import { SessionDao } from './src/dao/session.dao';
@@ -51,10 +50,6 @@ const sessionStore = getSequelizeStore();
 
 
 const app = express();
-
-// if (!isProduction) {
-// app.use(cors({ credentials: true }))
-// }
 
 app.use(helmet())
 app.use(httpLogger)
@@ -118,11 +113,12 @@ app.get('/player', authenticated, (req: Request, res: Response, next: NextFuncti
   })
 })
 
-app.post('/room', authenticated, validateCreateRoom, (req: Request<{}, {}, RoomRequest>, res: Response, next: NextFunction) => {
-  roomService.createRoom(res.locals.player, req.body.roomName).then(() => {
-    res.status(200).end()
-  }).catch(next)
-})
+app.post('/room', authenticated, csrfProtection, validateCreateRoom,
+  (req: Request<{}, {}, RoomRequest>, res: Response, next: NextFunction) => {
+    roomService.createRoom(res.locals.player, req.body.roomName).then(() => {
+      res.status(200).end()
+    }).catch(next)
+  })
 
 app.get('/room', authenticated, (req: Request<{}, {}, {}>, res: Response, next: NextFunction) => {
   roomService.getRooms().then(rs => {
@@ -130,13 +126,14 @@ app.get('/room', authenticated, (req: Request<{}, {}, {}>, res: Response, next: 
   }).catch(next)
 })
 
-app.post('/room/:roomName', authenticated, validateJoinRoom, (req: Request<RoomParams, {}, {}>, res: Response, next: NextFunction) => {
-  roomService.joinRoom(res.locals.player, req.params.roomName).then(() => {
-    res.status(200).end()
-  }).catch(next)
-})
+app.post('/room/:roomName', authenticated, csrfProtection, validateJoinRoom,
+  (req: Request<RoomParams, {}, {}> & Request, res: Response, next: NextFunction) => {
+    roomService.joinRoom(res.locals.player, req.params.roomName).then(() => {
+      res.status(200).end()
+    }).catch(next)
+  })
 
-app.get('/game/:gameId', authenticated, (req: Request<MoveParams, {}, {}>, res: Response, next: NextFunction) => {
+app.get('/game/:gameId', authenticated, validateGetGame, (req: Request<MoveParams, {}, {}>, res: Response, next: NextFunction) => {
   gameService.getGame(res.locals.player, req.params.gameId).then(g => {
     res.status(200).send(g)
   }).catch(next)

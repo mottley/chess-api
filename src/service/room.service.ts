@@ -30,7 +30,7 @@ export class RoomService {
     await this.dao.createRoom(authenticatedPlayer, name)
   }
 
-  async joinRoom(authenticatedPlayer: Player, name: string): Promise<GameResponse> {
+  async joinRoom(authenticatedPlayer: Player, name: string): Promise<GameResponse | undefined> {
     const activeRooms: Room[] = await this.dao.getRoomsByStatus([RoomStatus.Pending, RoomStatus.InProgress])
 
     const room: Room | undefined = activeRooms.find(r => r.name === name)
@@ -45,8 +45,12 @@ export class RoomService {
       throw new BadRequestError('One player cannot be in multiple rooms at once!')
     }
 
-    // TODO - check if there are enough players
     const players: Player[] = [...room.players, authenticatedPlayer]
+
+    if (players.length < 2) {
+      return undefined
+    }
+
     const gameResponse: GameResponse = await this.gservice.startGame(players)
 
     room.gameId = gameResponse.gameId

@@ -9,11 +9,11 @@ interface DefaultFields {
 
 const SequelizeStore = sessionSequelize(session.Store)
 
-const extendDefaultFields = (defaults: DefaultFields, session: session.SessionData) => {
+const extendDefaultFields = (defaults: DefaultFields, playerSession: session.SessionData) => {
   return {
     data: defaults.data,
     expires: defaults.expires,
-    PlayerId: session.playerId
+    PlayerId: playerSession.playerId
   };
 }
 

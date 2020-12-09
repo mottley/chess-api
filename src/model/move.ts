@@ -1,10 +1,8 @@
-import { Game } from './game';
 import { Player } from './player';
 
 
 export class Move {
   move: string
-  // game: Game
   player: Player
   timestamp: Date
   gameId: string

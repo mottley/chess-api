@@ -1,4 +1,4 @@
-import { Model, DataTypes, InitOptions, Optional, HasManyAddAssociationMixin, Association, HasManyGetAssociationsMixin } from 'sequelize';
+import { Model, DataTypes, InitOptions, Optional } from 'sequelize';
 import { GameStatus, Color, GameResult } from '../../model/enum';
 import { getOptions } from '../connection';
 import { PlayerDbo } from './player.dbo';

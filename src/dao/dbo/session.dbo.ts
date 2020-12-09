@@ -1,4 +1,4 @@
-import { Model, DataTypes, Sequelize, InitOptions } from 'sequelize';
+import { Model, DataTypes, InitOptions } from 'sequelize';
 import { getOptions } from '../connection';
 import { PlayerDbo } from './player.dbo';
 

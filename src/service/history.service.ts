@@ -2,7 +2,6 @@ import { GameDao } from '../dao/game.dao';
 import { MoveDao } from '../dao/move.dao';
 import { Move } from '../model/move';
 import { Game } from '../model/game';
-import { UnauthorizedError } from '../error';
 import { Player } from '../model/player';
 import { GameStatus, GameResult, Color } from '../model/enum';
 import { PlayerDao } from '../dao/player.dao';
@@ -95,8 +94,8 @@ export class HistoryService {
     // Determine each player's rank
     const scoredPlayers = allPlayers.map(p => ({ player: p, score: playerRecords[p.id].wins + 0.5 * playerRecords[p.id].draws }))
     // Sort descending order
-    const sortedScores = scoredPlayers.sort((a, b) => b.score - a.score)
-    const rankedPlayers: Player[] = sortedScores.map(sp => sp.player)
+    scoredPlayers.sort((a, b) => b.score - a.score)
+    const rankedPlayers: Player[] = scoredPlayers.map(sp => sp.player)
 
     return rankedPlayers.map((p, idx) => ({
       username: p.username,
