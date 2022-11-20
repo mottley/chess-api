@@ -50,7 +50,7 @@
     "@types/zxcvbn": "^4.4.0",
     "nodemon": "^2.0.6",
     "safe-regex": "^2.1.1",
-    "ts-node": "^9.0.0",
+    "ts-node": "^10.0.0",
     "typescript": "^4.0.5"
   }
 }
