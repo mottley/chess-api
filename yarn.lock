@@ -125,9 +125,9 @@
     "@types/node" "*"
 
 "@types/node-cron@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@types/node-cron/-/node-cron-2.0.3.tgz#b5bb940523d265f6a36548856ec0c278ea5a35d6"
-  integrity sha512-gwBBGeY2XeYBLE0R01K9Sm2hvNcPGmoloL6aqthA3QmBB1GYXTHIJ42AGZL7bdXBRiwbRV8b6NB5iKpl20R3gw==
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/@types/node-cron/-/node-cron-2.0.8.tgz#2d33eb94088ca9ca6c977b4eb2fa758fb6722d02"
+  integrity sha512-YeoqKLt4ElsPHNIwc3tZ86yLRcyZ8GzUN1PbP4dnmBrwMISZfNaiH9OIqHdDq8fnhxxdjHN+G6HYYQ0MaRoDYA==
   dependencies:
     "@types/tz-offset" "*"
 
@@ -170,9 +170,9 @@
     "@types/superagent" "*"
 
 "@types/tz-offset@*":
-  version "0.0.0"
-  resolved "https://registry.yarnpkg.com/@types/tz-offset/-/tz-offset-0.0.0.tgz#d58f1cebd794148d245420f8f0660305d320e565"
-  integrity sha512-XLD/llTSB6EBe3thkN+/I0L+yCTB6sjrcVovQdx2Cnl6N6bTzHmwe/J8mWnsXFgxLrj/emzdv8IR4evKYG2qxQ==
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@types/tz-offset/-/tz-offset-0.0.3.tgz#244daf796ebb30b621b7a1cf4795e0f526d53d24"
+  integrity sha512-JPieQFasx+g7DQE0jRf1Vw7k7ak9LCLWnzcis/fcVwnfTuGwo7XRI4q/BaBTxatAVI2Ea/+d/4thzdN3yOu19A==
 
 "@types/zxcvbn@^4.4.0":
   version "4.4.0"
